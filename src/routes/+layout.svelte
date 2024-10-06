@@ -60,7 +60,7 @@
                 <strong class="text-xl uppercase">Vibe Chuck</strong>
                 <button 
                     type="button" 
-                    class="btn-icon btn-icon-sm variant-filled ml-6" 
+                    class="btn-icon btn-icon-sm bg-gradient-to-br variant-gradient-tertiary-primary ml-6" 
                     on:click={navigateToNewPost}
                     disabled={!$isLoggedIn}
                 >
