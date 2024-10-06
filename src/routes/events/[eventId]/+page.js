@@ -21,6 +21,7 @@ export const load = async ({ params, url }) => {
         imgs,
         rank: record.rank,
         event: record.event,
+        description: record.description
       };
     });
     return {
