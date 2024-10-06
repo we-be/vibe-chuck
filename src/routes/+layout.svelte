@@ -57,12 +57,12 @@
     <svelte:fragment slot="header">
         <AppBar>
             <svelte:fragment slot="lead">
-                <strong class="text-xl uppercase">Skeleton</strong>
+                <strong class="text-xl uppercase">Vibe Chuck</strong>
             </svelte:fragment>
             <svelte:fragment slot="trail">
                 {#each $events as event}
                     <button class="btn btn-sm variant-ghost-surface" on:click={() => navigateToEvent(event.id)}>
-                        {event.name}
+                        {event.displayName}
                     </button>
                 {/each}
                 {#if $isLoggedIn}
