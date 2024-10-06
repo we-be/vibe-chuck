@@ -2,6 +2,7 @@
     import { pbStore } from '$lib/pocketbase';
     import { goto } from '$app/navigation';
     import { onMount } from 'svelte';
+    import { fetchEvents } from '$lib/stores/events';
 
     let pb;
     let isSignUp = false;
@@ -22,7 +23,7 @@
                 console.log('Logged in with token:', pb.authStore.token);
                 console.log('User ID:', pb.authStore.model.id);
                 
-                // Redirect to the home page or dashboard after successful login
+                await fetchEvents();
                 goto('/');
             } else {
                 console.log('Login failed');
@@ -50,6 +51,7 @@
                 await pb.collection('users').authWithPassword(email, password);
             }
             if (pb.authStore.isValid) {
+                await fetchEvents();
                 goto('/');
             }
         } catch (err) {
