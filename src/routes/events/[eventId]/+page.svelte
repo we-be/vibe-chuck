@@ -7,10 +7,7 @@
     
     $: ({ posts = [], error } = data);
   
-    // For debugging purposes
-    $: console.log('Data:', data);
     $: console.log('Posts:', posts);
-    $: console.log('Error:', error);
   
     onMount(() => {
       return page.subscribe(() => {
