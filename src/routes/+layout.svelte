@@ -4,10 +4,7 @@
     import { AppShell, AppBar } from '@skeletonlabs/skeleton';
     import { writable } from 'svelte/store';
     import { goto } from '$app/navigation';
-    import PocketBase from 'pocketbase';
-
-    // Initialize PocketBase client
-    const pb = new PocketBase('https://pb.we-be.xyz');
+    import { pbStore } from '$lib/pocketbase';
 
     // Store for events
     export let events = writable([]);
@@ -15,8 +12,9 @@
     // Fetch events on mount
     onMount(async () => {
         try {
+            const pb = await pbStore.init(); // Ensure the client is initialized
             const records = await pb.collection('events').getFullList({
-                sort: '-start', // You can sort the events by start date
+                sort: '-start',
             });
             events.set(records);
         } catch (error) {

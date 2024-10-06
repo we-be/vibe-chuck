@@ -1,15 +1,15 @@
-import PocketBase from 'pocketbase';
+import { pbStore } from '$lib/pocketbase';
 
 export const load = async ({ params, url }) => {
   console.log('Load function called with params:', params);
-  const pb = new PocketBase('https://pb.we-be.xyz');
+  const pb = await pbStore.init(); // Ensure the client is initialized
   const eventId = params.eventId;
   try {
     // Fetch posts for the selected event
     const records = await pb.collection('posts').getFullList({
       filter: `event = "${eventId}"`,
       sort: 'rank',
-      expand: 'imgs', // If imgs is a relation or need to be expanded
+      expand: 'imgs',
     });
     // Map over records to construct image URLs
     const posts = records.map((record) => {
