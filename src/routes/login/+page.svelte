@@ -92,36 +92,37 @@
         <h1 class="h2 mb-6 text-center">{isSignUp ? 'Sign Up' : 'Login'}</h1>
 
         <form on:submit|preventDefault={handleSubmit} class="space-y-4">
-            <label class="label">
-                <span>Email</span>
+            <div class="form-group">
+                <label for="email" class="label">Email</label>
                 {#if Input}
-                    <svelte:component this={Input} type="email" bind:value={email} placeholder="Enter your email" required />
+                    <svelte:component this={Input} type="email" id="email" bind:value={email} placeholder="Enter your email" required />
                 {:else}
-                    <input type="email" bind:value={email} placeholder="Enter your email" required class="input" />
+                    <input type="email" id="email" bind:value={email} placeholder="Enter your email" required class="input" />
                 {/if}
-            </label>
-            <label class="label">
-                <span>Password</span>
+            </div>
+            <div class="form-group">
+                <label for="password" class="label">Password</label>
                 {#if Input}
-                    <svelte:component this={Input} type="password" bind:value={password} placeholder="Enter your password" required />
+                    <svelte:component this={Input} type="password" id="password" bind:value={password} placeholder="Enter your password" required />
                 {:else}
-                    <input type="password" bind:value={password} placeholder="Enter your password" required class="input" />
+                    <input type="password" id="password" bind:value={password} placeholder="Enter your password" required class="input" />
                 {/if}
-            </label>
+            </div>
             {#if isSignUp}
-                <label class="label">
-                    <span>Confirm Password</span>
+                <div class="form-group">
+                    <label for="passwordConfirm" class="label">Confirm Password</label>
                     {#if Input}
-                        <svelte:component this={Input} type="password" bind:value={passwordConfirm} placeholder="Confirm your password" required />
+                        <svelte:component this={Input} type="password" id="passwordConfirm" bind:value={passwordConfirm} placeholder="Confirm your password" required />
                     {:else}
-                        <input type="password" bind:value={passwordConfirm} placeholder="Confirm your password" required class="input" />
+                        <input type="password" id="passwordConfirm" bind:value={passwordConfirm} placeholder="Confirm your password" required class="input" />
                     {/if}
-                </label>
+                </div>
             {/if}
             {#if Button}
                 <svelte:component this={Button} type="submit" variant="filled" color="primary" class="w-full" disabled={loading}>
                     {#if loading}
-                        <span class="spinner"></span>
+                        <span class="spinner" aria-hidden="true"></span>
+                        <span class="sr-only">Loading...</span>
                     {:else}
                         {isSignUp ? 'Sign Up' : 'Login'}
                     {/if}
@@ -129,7 +130,8 @@
             {:else}
                 <button type="submit" class="btn variant-filled-primary w-full" disabled={loading}>
                     {#if loading}
-                        <span class="spinner"></span>
+                        <span class="spinner" aria-hidden="true"></span>
+                        <span class="sr-only">Loading...</span>
                     {:else}
                         {isSignUp ? 'Sign Up' : 'Login'}
                     {/if}
@@ -153,7 +155,8 @@
             {#if Button}
                 <svelte:component this={Button} on:click={loginWithGoogle} variant="filled" color="surface" class="w-full" disabled={loading}>
                     {#if loading}
-                        <span class="spinner"></span>
+                        <span class="spinner" aria-hidden="true"></span>
+                        <span class="sr-only">Loading...</span>
                     {:else}
                         Login with Google
                     {/if}
@@ -161,7 +164,8 @@
             {:else}
                 <button on:click={loginWithGoogle} class="btn variant-filled-surface w-full" disabled={loading}>
                     {#if loading}
-                        <span class="spinner"></span>
+                        <span class="spinner" aria-hidden="true"></span>
+                        <span class="sr-only">Loading...</span>
                     {:else}
                         Login with Google
                     {/if}
@@ -170,7 +174,7 @@
         </div>
 
         {#if error}
-            <p class="mt-4 text-sm text-error-500">{error}</p>
+            <p class="mt-4 text-sm text-error-500" role="alert">{error}</p>
         {/if}
     </div>
 </div>
@@ -190,5 +194,14 @@
         to {
             transform: rotate(360deg);
         }
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .form-group .label {
+        margin-bottom: 0.5rem;
     }
 </style>
