@@ -1,161 +1,77 @@
-<div class="carousel">
-	<div class="slides" bind:this={siema}>
-		<slot></slot>
-	</div>
-	{#if controls}
-	  <button class="left" on:click={left} use:resetInterval={autoplay} aria-label="left">
-		  <slot name="left-control"></slot>
-	  </button>
-	  <button class="right" on:click={right} use:resetInterval={autoplay} aria-label="right">
-		  <slot name="right-control"></slot>
-	  </button>
-	{/if}
-    {#if dots}
-	<ul>
-		{#each {length: totalDots} as _, i}
-		<li on:click={() => go(i*currentPerPage)} class={isDotActive(currentIndex, i) ? "active" : ""}></li>
-		{/each}
-	</ul>
-    {/if}
-</div>
-
-<style>
-	.carousel {
-		position: relative;
-		width: 100%;
-		justify-content: center;
-		align-items: center;
-	}
-	
-	button {
-		position: absolute;
-		width: 40px;
-		height: 40px;
-		top: 50%;
-		z-index: 50;
-		margin-top: -20px;
-		border: none;
-		background-color: transparent;
-	}
-  button:focus {
-    outline: none;
-  }
-	
-	.left {
-		left: 2vw;
-	}
-	
-	.right {
-		right: 2vw;
-	}
-	ul {
-		list-style-type: none;
-		position: absolute;
-		display: flex;
-		justify-content: center;
-		width: 100%;
-		margin-top: -30px;
-		padding: 0;
-	}
-	ul li {
-		margin: 6px;
-		border-radius: 100%;
-		background-color: rgba(255,255,255,0.5);
-		height: 8px;
-		width: 8px;
-	}
-	ul li:hover {
-		background-color: rgba(255,255,255,0.85);
-	}
-	ul li.active {
-		background-color: rgba(255,255,255,1);
-	}
-</style>
-
 <script>
-	import Siema from 'siema'
 	import { onMount, createEventDispatcher } from 'svelte'
 	
-	export let perPage = 3
+	export let perPage = 1
 	export let loop = true
 	export let autoplay = 0
-	export let duration = 200
-	export let easing = 'ease-out'
 	export let startIndex = 0
-	export let draggable = true
-	export let multipleDrag = true	
 	export let dots = true	
 	export let controls = true
-	export let threshold = 20
-	export let rtl = false
+
 	let currentIndex = startIndex;
-	
 	let siema
-	let controller
+	let totalSlides
 	let timer
 	const dispatch = createEventDispatcher()
 	
-	$: pips = controller ? controller.innerElements : []
-	$: currentPerPage = controller ? controller.perPage : perPage
-	$: totalDots = controller ? Math.ceil(controller.innerElements.length / currentPerPage) : []
+	$: currentPerPage = perPage
+	$: totalDots = totalSlides ? Math.ceil(totalSlides / currentPerPage) : 0
 	
 	onMount(() => {
-		controller = new Siema({
-			selector: siema,
-			perPage: typeof perPage === 'object' ? perPage : Number(perPage),
-			loop,
-  			duration,
-  			easing,
-  			startIndex,
-  			draggable,
- 			multipleDrag,
-  			threshold,
-  			rtl,
-			onChange: handleChange
-		})
+		totalSlides = siema.children.length
+		setupCarousel()
 		
 		if(autoplay) {
 			timer = setInterval(right, autoplay);
 		}
 		return () => {
 			autoplay && clearInterval(timer)
-			controller.destroy()
 		}
 	})
 	
-	export function isDotActive (currentIndex, dotIndex) {
-        if (currentIndex < 0) currentIndex = pips.length + currentIndex;
+	function setupCarousel() {
+		const slideWidth = 100 / currentPerPage
+		Array.from(siema.children).forEach(slide => {
+			slide.style.flex = `0 0 ${slideWidth}%`
+		})
+		go(startIndex)
+	}
+	
+	function isDotActive(currentIndex, dotIndex) {
+        if (currentIndex < 0) currentIndex = totalSlides + currentIndex;
         return currentIndex >= dotIndex*currentPerPage && currentIndex < (dotIndex*currentPerPage)+currentPerPage
     }
 	
-	export function left () {
-		controller.prev()
+	function left() {
+		go(currentIndex - currentPerPage)
 	}
 	
-	export function right () {
-		controller.next()
+	function right() {
+		go(currentIndex + currentPerPage)
 	}
 	
-	export function go (index) {
-		controller.goTo(index)
+	function go(index) {
+		if (loop) {
+			index = (index + totalSlides) % totalSlides
+		} else {
+			index = Math.max(0, Math.min(index, totalSlides - currentPerPage))
+		}
+		currentIndex = index
+		siema.style.transform = `translateX(-${index * (100 / currentPerPage)}%)`
+		dispatch('change', {
+			currentSlide: currentIndex,
+			slideCount: totalSlides
+		})
 	}
 	
-	export function pause() {
+	function pause() {
 		clearInterval(timer);
 	}
 	
-	export function resume() {
+	function resume() {
 		if (autoplay) {
 			timer = setInterval(right, autoplay);
 		}
-	}
-	
-	function handleChange (event) {
-		currentIndex = controller.currentSlide
-		dispatch('change', {
-			currentSlide: controller.currentSlide,
-			slideCount: controller.innerElements.length
-		} )
 	}
 	
 	function resetInterval(node, condition) {
@@ -175,3 +91,88 @@
 	  }
   }
 </script>
+
+<div class="carousel">
+	<div class="slides" bind:this={siema}>
+		<slot></slot>
+	</div>
+	{#if controls}
+	  <button class="left" on:click={left} use:resetInterval={autoplay} aria-label="left">
+		  <slot name="left-control"></slot>
+	  </button>
+	  <button class="right" on:click={right} use:resetInterval={autoplay} aria-label="right">
+		  <slot name="right-control"></slot>
+	  </button>
+	{/if}
+    {#if dots}
+	<ul>
+		{#each Array(totalDots) as _, i}
+		<!-- svelte-ignore a11y-click-events-have-key-events -->
+		<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+		<li on:click={() => go(i*currentPerPage)} class={isDotActive(currentIndex, i) ? "active" : ""}></li>
+		{/each}
+	</ul>
+    {/if}
+</div>
+
+<style>
+	.carousel {
+		position: relative;
+		width: 100%;
+		overflow: hidden;
+	}
+	
+	.slides {
+		display: flex;
+		transition: transform 0.3s ease-in-out;
+	}
+	
+	button {
+		position: absolute;
+		width: 40px;
+		height: 40px;
+		top: 50%;
+		z-index: 50;
+		margin-top: -20px;
+		border: none;
+		background-color: rgba(0,0,0,0.5);
+		color: white;
+		font-size: 20px;
+		cursor: pointer;
+	}
+	button:focus {
+		outline: none;
+	}
+	
+	.left {
+		left: 10px;
+	}
+	
+	.right {
+		right: 10px;
+	}
+	ul {
+		list-style-type: none;
+		position: absolute;
+		display: flex;
+		justify-content: center;
+		width: 100%;
+		bottom: 10px;
+		padding: 0;
+		margin: 0;
+	}
+	ul li {
+		margin: 0 6px;
+		border-radius: 100%;
+		background-color: rgba(255,255,255,0.5);
+		height: 8px;
+		width: 8px;
+		cursor: pointer;
+	}
+	ul li:hover {
+		background-color: rgba(255,255,255,0.85);
+	}
+	ul li.active {
+		background-color: rgba(255,255,255,1);
+	}
+</style>
