@@ -5,6 +5,8 @@
     import { writable } from 'svelte/store';
     import { goto } from '$app/navigation';
     import { pbStore } from '$lib/pocketbase';
+    import AuthWrapper from '$lib/AuthWrapper.svelte';
+    import { page } from '$app/stores';
 
     // Store for events
     export let events = writable([]);
@@ -26,25 +28,38 @@
     function navigateToEvent(eventId) {
         goto(`/events/${eventId}`);
     }
+
+    // Function to handle logout
+    async function logout() {
+        const pb = await pbStore.init();
+        pb.authStore.clear();
+        goto('/login');
+    }
+
+    $: isLoginPage = $page.url.pathname === '/login';
 </script>
 
-<!-- App Shell -->
-<AppShell>
-	<svelte:fragment slot="header">
-		<!-- App Bar -->
-		<AppBar>
-			<svelte:fragment slot="lead">
-				<strong class="text-xl uppercase">Skeleton</strong>
-			</svelte:fragment>
-			<svelte:fragment slot="trail">
-				{#each $events as event}
-					<button class="btn btn-sm variant-ghost-surface" on:click={() => navigateToEvent(event.id)}>
-						{event.name}
-					</button>
-				{/each}
-			</svelte:fragment>
-		</AppBar>
-	</svelte:fragment>
-	<!-- Page Route Content -->
-	<slot />
-</AppShell>
+{#if isLoginPage}
+    <slot />
+{:else}
+    <AuthWrapper>
+        <AppShell>
+            <svelte:fragment slot="header">
+                <AppBar>
+                    <svelte:fragment slot="lead">
+                        <strong class="text-xl uppercase">Skeleton</strong>
+                    </svelte:fragment>
+                    <svelte:fragment slot="trail">
+                        {#each $events as event}
+                            <button class="btn btn-sm variant-ghost-surface" on:click={() => navigateToEvent(event.id)}>
+                                {event.name}
+                            </button>
+                        {/each}
+                        <button class="btn btn-sm variant-ghost-surface" on:click={logout}>Logout</button>
+                    </svelte:fragment>
+                </AppBar>
+            </svelte:fragment>
+            <slot />
+        </AppShell>
+    </AuthWrapper>
+{/if}

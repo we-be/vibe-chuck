@@ -11,6 +11,10 @@ const createPocketBaseStore = () => {
             const client = new PocketBase('https://pb.we-be.xyz');
             set(client);
             return client;
+        },
+        getAuthStore: () => {
+            const client = get(pbStore);
+            return client ? client.authStore : null;
         }
     };
 };
