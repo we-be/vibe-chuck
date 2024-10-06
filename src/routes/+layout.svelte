@@ -8,6 +8,7 @@
     import AuthWrapper from '$lib/AuthWrapper.svelte';
     import { page } from '$app/stores';
     import { events, fetchEvents } from '$lib/stores/events';
+    import { Shell } from 'lucide-svelte'
 
     // Store for auth status
     let isLoggedIn = writable(false);
@@ -57,6 +58,7 @@
     <svelte:fragment slot="header">
         <AppBar>
             <svelte:fragment slot="lead">
+                <Shell class="mr-2" />
                 <strong class="text-xl uppercase">Vibe Chuck</strong>
             </svelte:fragment>
             <svelte:fragment slot="trail">
