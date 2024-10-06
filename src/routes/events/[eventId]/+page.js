@@ -4,16 +4,21 @@ export const load = async ({ params, url }) => {
   console.log('Load function called with params:', params);
   const pb = await pbStore.init(); // Ensure the client is initialized
   const eventId = params.eventId;
+
+  // Get pagination parameters from the URL
+  const page = parseInt(url.searchParams.get('page') || '1');
+  const perPage = parseInt(url.searchParams.get('perPage') || '10');
+
   try {
-    // Fetch posts for the selected event
-    const records = await pb.collection('posts').getFullList({
+    // Fetch paginated posts for the selected event
+    const { items: records, totalItems } = await pb.collection('posts').getList(page, perPage, {
       filter: `event = "${eventId}"`,
       sort: 'rank',
-      expand: 'imgs',
+      expand: 'op',
     });
-    // Map over records to construct image URLs
+
+    // Map over records to construct image URLs and include user information
     const posts = records.map((record) => {
-      // Ensure 'imgs' is an array of file names
       const imgs = record.imgs?.map(img => pb.getFileUrl(record, img)) || [];
       return {
         id: record.id,
@@ -21,17 +26,31 @@ export const load = async ({ params, url }) => {
         imgs,
         rank: record.rank,
         event: record.event,
-        description: record.description
+        description: record.description,
+        op: record.expand?.op?.username || record.op // Use expanded username if available, otherwise fallback to ID
       };
     });
+
     return {
       posts,
+      pagination: {
+        page,
+        perPage,
+        totalItems,
+        totalPages: Math.ceil(totalItems / perPage)
+      },
       error: null,
     };
   } catch (err) {
     console.error('Error fetching posts:', err);
     return {
       posts: [],
+      pagination: {
+        page: 1,
+        perPage: 10,
+        totalItems: 0,
+        totalPages: 0
+      },
       error: err.message,
     };
   }

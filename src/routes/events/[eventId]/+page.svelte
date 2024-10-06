@@ -2,9 +2,15 @@
 	import Carousel from '$lib/Carousel.svelte';
 	import { page } from '$app/stores';
 	import { Hash } from 'lucide-svelte';
+	import { goto } from '$app/navigation';
 	
-	// Access the posts data from the page store
-	$: ({ posts } = $page.data);
+	// Access the posts and pagination data from the page store
+	$: ({ posts, pagination } = $page.data);
+
+	// Function to handle page changes
+	function changePage(newPage) {
+		goto(`?page=${newPage}&perPage=${pagination.perPage}`);
+	}
 </script>
 
 <div class="posts-container">
@@ -30,11 +36,23 @@
 					<div slot="right-control">→</div>
 				</Carousel>
 			</div>
+            <p><i><sub>@{post.op}</sub></i></p>
 			{#if post.description}
 				<p class="event">{post.description}</p>
 			{/if}
 		</div>
 	{/each}
+</div>
+
+<!-- Pagination controls -->
+<div class="pagination">
+	<button on:click={() => changePage(pagination.page - 1)} disabled={pagination.page === 1}>
+		Previous
+	</button>
+	<span>Page {pagination.page} of {pagination.totalPages}</span>
+	<button on:click={() => changePage(pagination.page + 1)} disabled={pagination.page === pagination.totalPages}>
+		Next
+	</button>
 </div>
 
 <style>
@@ -46,7 +64,6 @@
 
 	.post {
 		margin-bottom: 40px;
-		border: 1px solid #ddd;
 		border-radius: 8px;
 		overflow: hidden;
 		box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -87,5 +104,23 @@
 		margin: 0;
 	}
 
+    .pagination {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		margin-top: 20px;
+	}
+
+	.pagination button {
+		margin: 0 10px;
+		padding: 5px 10px;
+		border-radius: 4px;
+		cursor: pointer;
+	}
+
+	.pagination button:disabled {
+		opacity: 0.5;
+		cursor: not-allowed;
+	}
 
 </style>
