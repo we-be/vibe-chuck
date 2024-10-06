@@ -1,41 +1,33 @@
-<script lang="ts">
-	import { onMount } from 'svelte';
-	import '../app.postcss';
-	import { AppShell, AppBar } from '@skeletonlabs/skeleton';
-	import { writable } from 'svelte/store';
-	import { goto } from '$app/navigation';
-	import PocketBase from 'pocketbase';
+<script>
+    import { onMount } from 'svelte';
+    import '../app.postcss';
+    import { AppShell, AppBar } from '@skeletonlabs/skeleton';
+    import { writable } from 'svelte/store';
+    import { goto } from '$app/navigation';
+    import PocketBase from 'pocketbase';
 
-	// Initialize PocketBase client
-	const pb = new PocketBase('https://pb.we-be.xyz');
+    // Initialize PocketBase client
+    const pb = new PocketBase('https://pb.we-be.xyz');
 
-	// Event type
-	type Event = {
-		id: string;
-		name: string;
-		start: string;
-		end: string;
-	};
+    // Store for events
+    export let events = writable([]);
 
-	// Store for events
-	export let events = writable<Event[]>([]);
+    // Fetch events on mount
+    onMount(async () => {
+        try {
+            const records = await pb.collection('events').getFullList({
+                sort: '-start', // You can sort the events by start date
+            });
+            events.set(records);
+        } catch (error) {
+            console.error('Failed to fetch events', error);
+        }
+    });
 
-	// Fetch events on mount
-	onMount(async () => {
-		try {
-			const records = await pb.collection('events').getFullList<Event>({
-				sort: '-start', // You can sort the events by start date
-			});
-			events.set(records);
-		} catch (error) {
-			console.error('Failed to fetch events', error);
-		}
-	});
-
-	// Function to navigate to the selected event
-	function navigateToEvent(eventId: string) {
-		goto(`/events/${eventId}`);
-	}
+    // Function to navigate to the selected event
+    function navigateToEvent(eventId) {
+        goto(`/events/${eventId}`);
+    }
 </script>
 
 <!-- App Shell -->

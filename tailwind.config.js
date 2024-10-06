@@ -1,5 +1,5 @@
 import { join } from 'path'
-import type { Config } from 'tailwindcss'
+
 import { skeleton } from '@skeletonlabs/tw-plugin'
 
 export default {
@@ -20,4 +20,4 @@ export default {
 			},
 		}),
 	],
-} satisfies Config;
+};
