@@ -11,7 +11,10 @@
     // Store for events
     export let events = writable([]);
 
-    // Fetch events on mount
+    // Store for auth status
+    let isLoggedIn = writable(false);
+
+    // Fetch events on mount and check auth status
     onMount(async () => {
         try {
             const pb = await pbStore.init(); // Ensure the client is initialized
@@ -19,6 +22,9 @@
                 sort: '-start',
             });
             events.set(records);
+            
+            // Check auth status
+            isLoggedIn.set(pb.authStore.isValid);
         } catch (error) {
             console.error('Failed to fetch events', error);
         }
@@ -33,6 +39,12 @@
     async function logout() {
         const pb = await pbStore.init();
         pb.authStore.clear();
+        isLoggedIn.set(false);
+        goto('/login');
+    }
+
+    // Function to handle login/signup
+    function loginSignup() {
         goto('/login');
     }
 
@@ -50,12 +62,16 @@
                         <strong class="text-xl uppercase">Skeleton</strong>
                     </svelte:fragment>
                     <svelte:fragment slot="trail">
-                        {#each $events as event}
-                            <button class="btn btn-sm variant-ghost-surface" on:click={() => navigateToEvent(event.id)}>
-                                {event.name}
-                            </button>
-                        {/each}
-                        <button class="btn btn-sm variant-ghost-surface" on:click={logout}>Logout</button>
+                        {#if $isLoggedIn}
+                            {#each $events as event}
+                                <button class="btn btn-sm variant-ghost-surface" on:click={() => navigateToEvent(event.id)}>
+                                    {event.name}
+                                </button>
+                            {/each}
+                            <button class="btn btn-sm variant-ghost-surface" on:click={logout}>Logout</button>
+                        {:else}
+                            <button class="btn btn-sm variant-ghost-surface" on:click={loginSignup}>Login/Sign-Up</button>
+                        {/if}
                     </svelte:fragment>
                 </AppBar>
             </svelte:fragment>
