@@ -8,29 +8,24 @@
     import AuthWrapper from '$lib/AuthWrapper.svelte';
     import { page } from '$app/stores';
     import { events, fetchEvents } from '$lib/stores/events';
-    import { Shell } from 'lucide-svelte'
+    import { Shell, CirclePlus } from 'lucide-svelte'
 
-    // Store for auth status
     let isLoggedIn = writable(false);
 
-    // Function to check auth status
     async function checkAuthStatus() {
         const pb = await pbStore.init();
         isLoggedIn.set(pb.authStore.isValid);
     }
 
-    // Fetch events and check auth status on mount
     onMount(() => {
         fetchEvents();
         checkAuthStatus();
     });
 
-    // Function to navigate to the selected event
     function navigateToEvent(eventId) {
         goto(`/events/${eventId}`);
     }
 
-    // Function to handle logout
     async function logout() {
         const pb = await pbStore.init();
         pb.authStore.clear();
@@ -38,9 +33,12 @@
         goto('/login');
     }
 
-    // Function to handle login/signup
     function loginSignup() {
         goto('/login');
+    }
+
+    function navigateToNewPost() {
+        goto('/new-post');
     }
 
     // Subscribe to page changes
@@ -60,6 +58,14 @@
             <svelte:fragment slot="lead">
                 <Shell class="mr-2" />
                 <strong class="text-xl uppercase">Vibe Chuck</strong>
+                <button 
+                    type="button" 
+                    class="btn-icon btn-icon-sm variant-filled ml-6" 
+                    on:click={navigateToNewPost}
+                    disabled={!$isLoggedIn}
+                >
+                    <CirclePlus />
+                </button>
             </svelte:fragment>
             <svelte:fragment slot="trail">
                 {#each $events as event}
