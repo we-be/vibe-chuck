@@ -88,7 +88,7 @@
       <AppBar>
         <svelte:fragment slot="lead">
           <Shell class="mr-2" />
-          <strong class="text-xl uppercase">Vibe Chuck</strong>
+          <strong class="text-xl uppercase"><span class="gradient-heading">Vibe Chuck</span></strong>
           <button
             type="button"
             class="btn-icon btn-icon-sm bg-gradient-to-br variant-gradient-tertiary-primary ml-6"
