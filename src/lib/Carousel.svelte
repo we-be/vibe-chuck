@@ -97,7 +97,7 @@
 	<div class="slides" bind:this={siema}>
 		<slot></slot>
 	</div>
-	{#if controls}
+	{#if controls && totalSlides > 1}
 	    <button class="left" on:click={left} use:resetInterval={autoplay} aria-label="left">
           <ChevronLeft />
 	  </button>
