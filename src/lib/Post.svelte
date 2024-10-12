@@ -1,8 +1,14 @@
 <script>
     import Carousel from '$lib/Carousel.svelte';
-    import { Hash } from 'lucide-svelte';
+    import { Hash, Heart } from 'lucide-svelte';
 
     export let post;
+    let liked = false;
+
+    function toggleLike() {
+        liked = !liked;
+        // TODO do
+    }
 </script>
 
 <div class="card card-hover m-4">
@@ -31,6 +37,9 @@
                 <p class="event">{post.description}</p>
             {/if}
         </div>
+        <button class="heart-button" on:click={toggleLike} aria-label="Like">
+            <Heart fill={liked ? 'currentColor' : 'none'} />
+        </button>
     </div>
 </div>
 
@@ -95,5 +104,26 @@
 
     .event {
         font-size: 0.9rem;
+    }
+
+    .heart-button {
+        position: absolute;
+        bottom: 20px;
+        right: 20px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 8px;
+        border-radius: 50%;
+        transition: background-color 0.3s ease;
+    }
+
+    .heart-button:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .heart-button :global(svg) {
+        width: 24px;
+        height: 24px;
     }
 </style>
