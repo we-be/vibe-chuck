@@ -1,5 +1,6 @@
 <script>
 	import { onMount, createEventDispatcher } from 'svelte'
+    import { ChevronRight, ChevronLeft } from 'lucide-svelte';
 	
 	export let perPage = 1
 	export let loop = true
@@ -97,11 +98,11 @@
 		<slot></slot>
 	</div>
 	{#if controls}
-	  <button class="left" on:click={left} use:resetInterval={autoplay} aria-label="left">
-		  <slot name="left-control"></slot>
+	    <button class="left" on:click={left} use:resetInterval={autoplay} aria-label="left">
+          <ChevronLeft />
 	  </button>
 	  <button class="right" on:click={right} use:resetInterval={autoplay} aria-label="right">
-		  <slot name="right-control"></slot>
+          <ChevronRight />
 	  </button>
 	{/if}
     {#if dots}
@@ -134,11 +135,6 @@
 		top: 50%;
 		z-index: 50;
 		margin-top: -20px;
-		border: none;
-		background-color: rgba(0,0,0,0.5);
-		color: white;
-		font-size: 20px;
-		cursor: pointer;
 	}
 	button:focus {
 		outline: none;
