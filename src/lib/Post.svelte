@@ -4,10 +4,20 @@
 
     export let post;
     let liked = false;
+    let votes = post.votes || 0;
 
     function toggleLike() {
         liked = !liked;
-        // TODO do
+        votes += liked ? 1 : -1;
+        // TODO hit api
+    }
+
+    function formatVotes(count) {
+        if (count < 1000) return count.toString();
+        const formatted = (count / 1000).toFixed(1);
+        return formatted.endsWith('.0') 
+            ? formatted.slice(0, -2) + 'K' 
+            : formatted + 'K';
     }
 </script>
 
@@ -37,9 +47,12 @@
                 <p class="event">{post.description}</p>
             {/if}
         </div>
-        <button class="heart-button" on:click={toggleLike} aria-label="Like">
-            <Heart fill={liked ? 'currentColor' : 'none'} />
-        </button>
+        <div class="heart-container">
+            <button class="heart-button" on:click={toggleLike} aria-label="Like">
+                <Heart fill={liked ? 'currentColor' : 'none'} />
+            </button>
+            <p class="votes"><sub>{formatVotes(votes)}</sub></p>
+        </div>
     </div>
 </div>
 
@@ -83,7 +96,6 @@
             rgba(0,0,0,0.4) 60%,
             rgba(0,0,0,0.2) 80%,
             rgba(0,0,0,0) 100%);
-        color: white;
     }
 
     .title-container {
@@ -96,20 +108,29 @@
         margin: 0;
         margin-right: 10px;
         font-size: 1.5rem;
+        color: white;
     }
 
     .op {
         margin-bottom: 5px;
+        color: white;
     }
 
     .event {
         font-size: 0.9rem;
+        color: white;
     }
 
-    .heart-button {
+    .heart-container {
         position: absolute;
         bottom: 20px;
         right: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .heart-button {
         background: none;
         border: none;
         cursor: pointer;
@@ -125,5 +146,11 @@
     .heart-button :global(svg) {
         width: 24px;
         height: 24px;
+    }
+
+    .votes {
+        margin-top: 4px;
+        font-size: 0.8rem;
+        color: white;
     }
 </style>

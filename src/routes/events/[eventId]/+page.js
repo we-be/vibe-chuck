@@ -27,7 +27,8 @@ export const load = async ({ params, url }) => {
         rank: record.rank,
         event: record.event,
         description: record.description,
-        op: record.expand?.op?.username || record.op // Use expanded username if available, otherwise fallback to ID
+        op: record.expand?.op?.username || record.op, // try to expand user or fall back on id
+        votes: record.votes
       };
     });
 
