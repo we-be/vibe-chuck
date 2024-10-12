@@ -8,11 +8,12 @@
     import AuthWrapper from "$lib/AuthWrapper.svelte";
     import { page } from "$app/stores";
     import { events, fetchEvents } from "$lib/stores/events";
-    import { Shell, CirclePlus } from "lucide-svelte";
-    
+    import { Shell, CirclePlus, Menu } from "lucide-svelte";
+  
     initializeStores();
     const toastStore = getToastStore();
     let isLoggedIn = writable(false);
+    let isMobileMenuOpen = false;
   
     async function checkAuthStatus() {
       const pb = await pbStore.init();
@@ -79,26 +80,32 @@
     }
   
     $: isLoginPage = $page.url.pathname === "/login";
-  </script>
-  
-  <Toast />
-  
-  <AppShell>
-    <svelte:fragment slot="header">
-      <AppBar>
-        <svelte:fragment slot="lead">
-          <Shell class="mr-2" />
-          <strong class="text-xl uppercase"><span class="gradient-heading">Vibe Chuck</span></strong>
-          <button
-            type="button"
-            class="btn-icon btn-icon-sm bg-gradient-to-br variant-gradient-tertiary-primary ml-6"
-            on:click={navigateToNewPost}
-            disabled={!$isLoggedIn}
-          >
-            <CirclePlus />
-          </button>
-        </svelte:fragment>
-        <svelte:fragment slot="trail">
+
+    function toggleMobileMenu() {
+        isMobileMenuOpen = !isMobileMenuOpen;
+  }
+</script>
+
+<Toast />
+
+<AppShell>
+  <svelte:fragment slot="header">
+    <AppBar>
+      <svelte:fragment slot="lead">
+        <Shell class="mr-2" />
+        <strong class="text-xl uppercase"><span class="gradient-heading">Vibe Chuck</span></strong>
+        <button
+          type="button"
+          class="btn-icon btn-icon-sm bg-gradient-to-br variant-gradient-tertiary-primary ml-6"
+          on:click={navigateToNewPost}
+          disabled={!$isLoggedIn}
+        >
+          <CirclePlus />
+        </button>
+      </svelte:fragment>
+      <svelte:fragment slot="trail">
+        <!-- Desktop menu -->
+        <div class="hidden md:flex items-center space-x-2">
           {#each $events as event}
             <button
               class="btn btn-sm variant-ghost-surface {isEventInFuture(event.start) ? 'future-event' : ''}"
@@ -109,30 +116,49 @@
             </button>
           {/each}
           {#if $isLoggedIn}
-            <button class="btn btn-sm variant-ghost-surface" on:click={logout}
-              >Logout</button
-            >
+            <button class="btn btn-sm variant-ghost-surface" on:click={logout}>Logout</button>
           {:else}
-            <button
-              class="btn btn-sm variant-ghost-surface"
-              on:click={loginSignup}>Login/Sign-Up</button
-            >
+            <button class="btn btn-sm variant-ghost-surface" on:click={loginSignup}>Login/Sign-Up</button>
           {/if}
-        </svelte:fragment>
-      </AppBar>
-    </svelte:fragment>
-    {#if isLoginPage}
-      <slot />
-    {:else}
-      <AuthWrapper>
-        <slot />
-      </AuthWrapper>
+        </div>
+        <!-- Mobile menu button -->
+        <button class="md:hidden btn btn-sm variant-ghost-surface" on:click={toggleMobileMenu}>
+          <Menu />
+        </button>
+      </svelte:fragment>
+    </AppBar>
+    <!-- Mobile menu -->
+    {#if isMobileMenuOpen}
+      <div class="md:hidden bg-surface-100-800-token p-4">
+        {#each $events as event}
+          <button
+            class="btn btn-sm variant-ghost-surface w-full mb-2 {isEventInFuture(event.start) ? 'future-event' : ''}"
+            on:click={() => handleEventClick(event)}
+            title={isEventInFuture(event.start) ? `Starts ${formatDate(event.start)}` : ''}
+          >
+            {event.displayName}
+          </button>
+        {/each}
+        {#if $isLoggedIn}
+          <button class="btn btn-sm variant-ghost-surface w-full mb-2" on:click={logout}>Logout</button>
+        {:else}
+          <button class="btn btn-sm variant-ghost-surface w-full mb-2" on:click={loginSignup}>Login/Sign-Up</button>
+        {/if}
+      </div>
     {/if}
-  </AppShell>
-  
-  <style>
-    :global(.future-event) {
-      opacity: 0.5;
-      cursor: help;
-    }
-  </style>
+  </svelte:fragment>
+  {#if isLoginPage}
+    <slot />
+  {:else}
+    <AuthWrapper>
+      <slot />
+    </AuthWrapper>
+  {/if}
+</AppShell>
+
+<style>
+  :global(.future-event) {
+    opacity: 0.5;
+    cursor: help;
+  }
+</style>
