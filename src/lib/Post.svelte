@@ -48,7 +48,9 @@
                     </span>
                 {/if}
             </div>
-            <p class="op"><i><sub>@{post.op}</sub></i></p>
+            {#if !canEdit}
+                <p class="op"><i><sub>@{post.op}</sub></i></p>
+            {/if}
             {#if post.description}
                 <p class="event">{post.description}</p>
             {/if}
