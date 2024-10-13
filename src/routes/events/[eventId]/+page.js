@@ -7,7 +7,7 @@ export const load = async ({ params, url }) => {
 
   // Get pagination parameters from the URL
   const page = parseInt(url.searchParams.get('page') || '1');
-  const perPage = parseInt(url.searchParams.get('perPage') || '10');
+  const perPage = parseInt(url.searchParams.get('perPage') || '5');
 
   try {
     // Fetch paginated posts for the selected event

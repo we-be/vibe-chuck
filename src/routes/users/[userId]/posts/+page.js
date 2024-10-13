@@ -19,7 +19,7 @@ export const load = async ({ params, url }) => {
         }
 
         page = parseInt(url.searchParams.get('page') || '1');
-        perPage = parseInt(url.searchParams.get('perPage') || '10');
+        perPage = parseInt(url.searchParams.get('perPage') || '15');
 
         // Fetch posts
         const { items: records, totalItems: total } = await pb.collection('posts').getList(page, perPage, {
