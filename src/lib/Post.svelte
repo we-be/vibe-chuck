@@ -1,7 +1,7 @@
 <script>
     import Carousel from '$lib/Carousel.svelte';
-    import { Hash, Heart, Pencil } from 'lucide-svelte';
-    import { goto } from '$app/navigation';  // Make sure to import goto
+    import { Hash, Heart, Pencil, Trash2 } from 'lucide-svelte';
+    import { goto } from '$app/navigation';
 
     export let post;
     export let canEdit = false;
@@ -57,13 +57,16 @@
         </div>
         <div class="heart-container">
             {#if !canEdit}
-                <button class="heart-button" on:click={toggleLike} aria-label="Like">
+                <button class="icon-button heart-button" on:click={toggleLike} aria-label="Like">
                     <Heart fill={liked ? 'currentColor' : 'none'} />
                 </button>
                 <p class="votes"><sub>{formatVotes(votes)}</sub></p>
             {:else}
-                <button class="heart-button" on:click={editPost} aria-label="Edit">
+                <button class="icon-button edit-button" on:click={editPost} aria-label="Edit">
                     <Pencil />
+                </button>
+                <button class="icon-button trash-button" aria-label="Delete">
+                    <Trash2 />
                 </button>
             {/if}
         </div>
@@ -144,22 +147,27 @@
         align-items: center;
     }
 
-    .heart-button {
+    .icon-button {
         background: none;
         border: none;
         cursor: pointer;
         padding: 8px;
         border-radius: 50%;
-        transition: background-color 0.3s ease;
+        transition: background-color 0.3s ease, color 0.3s ease;
     }
 
-    .heart-button:hover {
+    .icon-button:hover {
         background-color: rgba(255, 255, 255, 0.2);
     }
 
-    .heart-button :global(svg) {
+    .icon-button :global(svg) {
         width: 24px;
         height: 24px;
+    }
+
+    .trash-button:hover {
+        background-color: rgba(255, 0, 0, 0.2);
+        color: #ff6b6b;
     }
 
     .votes {
