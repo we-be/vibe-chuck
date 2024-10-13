@@ -2,6 +2,9 @@
     import Carousel from '$lib/Carousel.svelte';
     import { Hash, Heart, Pencil, Trash2 } from 'lucide-svelte';
     import { goto } from '$app/navigation';
+    import { createEventDispatcher } from 'svelte';
+
+    const dispatch = createEventDispatcher();
 
     export let post;
     export let canEdit = false;
@@ -25,9 +28,15 @@
             ? formatted.slice(0, -2) + 'K' 
             : formatted + 'K';
     }
+
+    function handleClick() {
+        dispatch('openFullScreen', { post });
+    }
 </script>
 
-<div class="card card-hover m-4">
+<!-- svelte-ignore a11y-click-events-have-key-events -->
+<!-- svelte-ignore a11y-no-static-element-interactions -->
+<div class="card card-hover m-4" on:click={handleClick}>
     <div class="card-content">
         <Carousel perPage={1} autoplay={5000}>
             {#each post.imgs as imgSrc (imgSrc)}
@@ -57,15 +66,15 @@
         </div>
         <div class="heart-container">
             {#if !canEdit}
-                <button class="icon-button heart-button" on:click={toggleLike} aria-label="Like">
+                <button class="icon-button heart-button" on:click|stopPropagation={toggleLike} aria-label="Like">
                     <Heart fill={liked ? 'currentColor' : 'none'} />
                 </button>
                 <p class="votes"><sub>{formatVotes(votes)}</sub></p>
             {:else}
-                <button class="icon-button edit-button" on:click={editPost} aria-label="Edit">
+                <button class="icon-button edit-button" on:click|stopPropagation={editPost} aria-label="Edit">
                     <Pencil />
                 </button>
-                <button class="icon-button trash-button" aria-label="Delete">
+                <button class="icon-button trash-button" on:click|stopPropagation aria-label="Delete">
                     <Trash2 />
                 </button>
             {/if}

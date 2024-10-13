@@ -1,20 +1,31 @@
 <script>
     import Post from '$lib/Post.svelte';
+    import FullScreenPost from '$lib/FullScreenPost.svelte';
     import { page } from '$app/stores';
     import { goto } from '$app/navigation';
     
     // Access the posts and pagination data from the page store
     $: ({ posts, pagination } = $page.data);
 
+    let fullScreenPost = null;
+
     // Function to handle page changes
     function changePage(newPage) {
         goto(`?page=${newPage}&perPage=${pagination.perPage}`);
+    }
+
+    function openFullScreen(event) {
+        fullScreenPost = event.detail.post;
+    }
+
+    function closeFullScreen() {
+        fullScreenPost = null;
     }
 </script>
 
 <div class="posts-container">
     {#each posts as post (post.id)}
-        <Post {post} />
+        <Post {post} on:openFullScreen={openFullScreen} />
     {/each}
 </div>
 
@@ -28,6 +39,10 @@
         Next
     </button>
 </div>
+
+{#if fullScreenPost}
+    <FullScreenPost post={fullScreenPost} on:close={closeFullScreen} />
+{/if}
 
 <style>
     .posts-container {
