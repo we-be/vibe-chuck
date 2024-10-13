@@ -13,6 +13,14 @@
 
 <div class="posts-container">
     {#each posts as post (post.id)}
-        <Post {post} />
+        <Post {post} canEdit=true />
     {/each}
 </div>
+
+<style>
+    .posts-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+</style>

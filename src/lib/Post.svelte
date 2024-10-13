@@ -1,8 +1,10 @@
 <script>
     import Carousel from '$lib/Carousel.svelte';
-    import { Hash, Heart } from 'lucide-svelte';
+    import { Hash, Heart, Pencil } from 'lucide-svelte';
+    import { goto } from '$app/navigation';  // Make sure to import goto
 
     export let post;
+    export let canEdit = false;
     let liked = false;
     let votes = post.votes || 0;
 
@@ -10,6 +12,10 @@
         liked = !liked;
         votes += liked ? 1 : -1;
         // TODO hit api
+    }
+
+    function editPost() {
+        goto(`/users/${post.op}/posts/${post.id}/edit`)
     }
 
     function formatVotes(count) {
@@ -48,10 +54,16 @@
             {/if}
         </div>
         <div class="heart-container">
-            <button class="heart-button" on:click={toggleLike} aria-label="Like">
-                <Heart fill={liked ? 'currentColor' : 'none'} />
-            </button>
-            <p class="votes"><sub>{formatVotes(votes)}</sub></p>
+            {#if !canEdit}
+                <button class="heart-button" on:click={toggleLike} aria-label="Like">
+                    <Heart fill={liked ? 'currentColor' : 'none'} />
+                </button>
+                <p class="votes"><sub>{formatVotes(votes)}</sub></p>
+            {:else}
+                <button class="heart-button" on:click={editPost} aria-label="Edit">
+                    <Pencil />
+                </button>
+            {/if}
         </div>
     </div>
 </div>
