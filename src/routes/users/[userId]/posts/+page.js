@@ -23,7 +23,7 @@ export const load = async ({ params, url }) => {
 
         // Fetch posts
         const { items: records, totalItems: total } = await pb.collection('posts').getList(page, perPage, {
-            // filter: `user = "${userId}"`,
+            filter: `op = "${userId}"`,
             // sort: '-created'
         });
 
