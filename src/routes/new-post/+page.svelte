@@ -6,6 +6,7 @@
 
     const eventId = "9qpinqrrm25wbdg";
     const toastStore = getToastStore();
+    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB in bytes
 
     let title = '';
     let description = '';
@@ -35,14 +36,21 @@
         try {
             const pb = await pbStore.init(); // ensure client is initialized
             
+            if (!pb.authStore.isValid) {
+                throw new Error('User not authenticated');
+            }
+
             const formData = new FormData();
             formData.append('title', title);
             formData.append('description', description);
             formData.append('event', eventId);
-            formData.append('op', pb.authStore.model.id); // assume user is authenticated
+            formData.append('op', pb.authStore.model.id);
             
-            // add images to formdata
+            // Check file sizes and add images to formdata
             for (let file of files) {
+                if (file.size > MAX_FILE_SIZE) {
+                    throw new Error(`File "${file.name}" exceeds the maximum size of 10MB.`);
+                }
                 formData.append('imgs', file);
             }
 
@@ -66,11 +74,21 @@
             goto(`/events/${eventId}`);
         } catch (err) {
             console.error('error creating post:', err);
-            error = err.message;
+            
+            let errorMessage;
+            if (err.message.includes('exceeds the maximum size')) {
+                errorMessage = err.message;
+            } else if (err.message === 'User not authenticated') {
+                errorMessage = 'You must be logged in to create a post.';
+            } else {
+                errorMessage = `Error creating post: ${err.message}`;
+            }
+            
+            error = errorMessage;
 
             // show error toast
             toastStore.trigger({
-                message: `Error: ${err.message}`,
+                message: errorMessage,
                 background: 'variant-filled-error'
             });
         } finally {
@@ -106,7 +124,7 @@
                 ></textarea>
             </label>
             <label class="label">
-                <span>Upload Images</span>
+                <span>Upload Images (Max 10MB per image)</span>
                 <input
                     type="file"
                     class="input px-4 py-2"
