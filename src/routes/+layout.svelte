@@ -8,7 +8,7 @@
     import AuthWrapper from "$lib/AuthWrapper.svelte";
     import { page } from "$app/stores";
     import { events, fetchEvents } from "$lib/stores/events";
-    import { Shell, CirclePlus, Menu } from "lucide-svelte";
+    import { Shell, CirclePlus, Menu, GalleryVerticalEnd } from "lucide-svelte";
   
     initializeStores();
     const toastStore = getToastStore();
@@ -42,6 +42,12 @@
   
     function navigateToNewPost() {
       goto("/new-post");
+    }
+
+    async function navigateToUserPosts() {
+        const pb = await pbStore.init()
+        let userId = pb.authStore.model.id
+        goto(`/users/${userId}/posts?page=1&perPage=10`)
     }
   
     function isEventInFuture(eventStartDate) {
@@ -101,6 +107,14 @@
           disabled={!$isLoggedIn}
         >
           <CirclePlus />
+        </button>
+        <button
+            type="button"
+            class="btn-icon btn-icon-sm variant-gradient-tertiary-primary ml-6"
+            on:click={navigateToUserPosts}
+            disabled={!$isLoggedIn}
+            >
+            <GalleryVerticalEnd />
         </button>
       </svelte:fragment>
       <svelte:fragment slot="trail">
