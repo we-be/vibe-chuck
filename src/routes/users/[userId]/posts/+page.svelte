@@ -2,7 +2,8 @@
     import { page } from "$app/stores";
     import Post from "$lib/Post.svelte"
 
-    $: ({ posts, pagination } = $page.data);
+    $: ({ posts, pagination, canEdit } = $page.data);
+
     function changePage(newPage) {
         goto(`?page=${newPage}&perPage=${pagination.perPage}`);
     }
@@ -10,7 +11,7 @@
 
 <div class="posts-container">
     {#each posts as post (post.id)}
-        <Post {post} canEdit=true />
+        <Post {post} {canEdit} />
     {/each}
 </div>
 
