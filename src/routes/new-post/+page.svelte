@@ -3,9 +3,23 @@
     import { writable } from 'svelte/store';
     import { goto } from '$app/navigation';
     import { getToastStore } from '@skeletonlabs/skeleton';
+    import { events, fetchEvents } from '$lib/stores/events';
+    import { onMount } from 'svelte';
 
-    const eventId = "9qpinqrrm25wbdg";
+    let eventId = "";
     const toastStore = getToastStore();
+    
+    onMount(async () => {
+        // Fetch events if needed
+        if ($events.length === 0) {
+            await fetchEvents();
+        }
+        
+        // Use the first available event if there's at least one
+        if ($events.length > 0) {
+            eventId = $events[0].id;
+        }
+    });
     const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB in bytes
 
     let title = '';
@@ -38,6 +52,19 @@
             
             if (!pb.authStore.isValid) {
                 throw new Error('User not authenticated');
+            }
+            
+            if (!eventId) {
+                // If we don't have an event ID yet, try to get one
+                if ($events.length === 0) {
+                    await fetchEvents();
+                }
+                
+                if ($events.length > 0) {
+                    eventId = $events[0].id;
+                } else {
+                    throw new Error('No events available. Please try again later.');
+                }
             }
 
             const formData = new FormData();
