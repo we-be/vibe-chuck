@@ -20,7 +20,13 @@ npm run dev
 # Visit http://localhost:5173 in your browser
 ```
 
-The app requires the PocketBase backend (vibecheckr) to be running. Make sure the PocketBase URL in `src/lib/pocketbase.js` points to your backend instance.
+The app requires the PocketBase backend (vibecheckr) to be running. You can configure the PocketBase URL using the `VITE_POCKETBASE_URL` environment variable. If not set, it defaults to `http://localhost:8090`.
+
+You can create a `.env` file in the project root with:
+
+```
+VITE_POCKETBASE_URL=https://your-pocketbase-url.com
+```
 
 ---
 <sub><sup>2024 TCP Software, LLC</sup></sub>
