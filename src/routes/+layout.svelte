@@ -8,7 +8,7 @@
     import AuthWrapper from "$lib/AuthWrapper.svelte";
     import { page } from "$app/stores";
     import { events, fetchEvents } from "$lib/stores/events";
-    import { Shell, CirclePlus, Menu, GalleryVerticalEnd } from "lucide-svelte";
+import { Shell, CirclePlus, Menu, GalleryVerticalEnd, User } from "lucide-svelte";
   
     initializeStores();
     const toastStore = getToastStore();
@@ -134,7 +134,10 @@
         <!-- Desktop menu -->
         <div class="hidden md:flex items-center space-x-2">
           {#if $isLoggedIn}
-            <button class="btn btn-sm variant-ghost-surface" on:click={logout}>Logout</button>
+            <button class="btn btn-sm variant-ghost-surface flex items-center" on:click={() => goto('/account')}>
+              <User class="mr-2" />
+              Account
+            </button>
           {:else}
             <button class="btn btn-sm variant-ghost-surface" on:click={loginSignup}>Login/Sign-Up</button>
           {/if}
@@ -158,7 +161,10 @@
           </button>
         {/each}
         {#if $isLoggedIn}
-          <button class="btn btn-sm variant-ghost-surface w-full mb-2" on:click={logout}>Logout</button>
+          <button class="btn btn-sm variant-ghost-surface w-full mb-2 flex items-center" on:click={() => goto('/account')}>
+            <User class="mr-2" />
+            Account
+          </button>
         {:else}
           <button class="btn btn-sm variant-ghost-surface w-full mb-2" on:click={loginSignup}>Login/Sign-Up</button>
         {/if}
