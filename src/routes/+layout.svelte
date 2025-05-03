@@ -117,9 +117,8 @@
             <GalleryVerticalEnd />
         </button>
       </svelte:fragment>
-      <svelte:fragment slot="trail">
-        <!-- Desktop menu -->
-        <div class="hidden md:flex items-center space-x-2">
+      <svelte:fragment slot="default">
+        <div class="hidden md:flex justify-center items-center space-x-2 w-full">
           {#each $events as event}
             <button
               class="btn btn-sm variant-ghost-surface {isEventInFuture(event.start) ? 'future-event' : ''}"
@@ -129,6 +128,11 @@
               {event.displayName}
             </button>
           {/each}
+        </div>
+      </svelte:fragment>
+      <svelte:fragment slot="trail">
+        <!-- Desktop menu -->
+        <div class="hidden md:flex items-center space-x-2">
           {#if $isLoggedIn}
             <button class="btn btn-sm variant-ghost-surface" on:click={logout}>Logout</button>
           {:else}
