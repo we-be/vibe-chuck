@@ -35,8 +35,10 @@
             } else if (record.location) {
                 location = record.location;
             }
-            if (record.avatar?.length) {
-                existingAvatarUrl = pb.getFileUrl(record, record.avatar[0]);
+            if (record.avatar) {
+                // Handle single or multiple avatar files
+                const avatarName = Array.isArray(record.avatar) ? record.avatar[0] : record.avatar;
+                existingAvatarUrl = pb.getFileUrl(record, avatarName);
             }
         } catch (err) {
             console.error('Failed to load user data:', err);
@@ -76,8 +78,9 @@
         try {
             const updated = await pb.collection('users').update(user.id, formData);
             toastStore.trigger({ message: 'Account updated successfully!', background: 'variant-filled-success' });
-            if (updated.avatar?.length) {
-                existingAvatarUrl = pb.getFileUrl(updated, updated.avatar[0]);
+            if (updated.avatar) {
+                const avatarName = Array.isArray(updated.avatar) ? updated.avatar[0] : updated.avatar;
+                existingAvatarUrl = pb.getFileUrl(updated, avatarName);
                 previewAvatarUrl = '';
                 avatarFile = null;
             }
