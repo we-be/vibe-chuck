@@ -40,7 +40,8 @@ export const load = async ({ params, url }) => {
                 event: record.event,
                 description: record.description,
                 votes: record.votes,
-                op: record.user // Assuming 'user' is the field name for the user who created the post
+                // use the 'op' field (original poster ID) for routing edits
+                op: record.op
             };
         });
 
