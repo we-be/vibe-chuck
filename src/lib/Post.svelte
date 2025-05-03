@@ -2,19 +2,72 @@
     import Carousel from '$lib/Carousel.svelte';
     import { Hash, Heart, Pencil, Trash2 } from 'lucide-svelte';
     import { goto } from '$app/navigation';
-    import { createEventDispatcher } from 'svelte';
+    import { createEventDispatcher, onMount } from 'svelte';
+    import { pbStore } from '$lib/pocketbase';
 
     const dispatch = createEventDispatcher();
+    const pb = pbStore.init();
 
     export let post;
     export let canEdit = false;
     let liked = false;
     let votes = post.votes || 0;
+    let likeId = null;
+    
+    onMount(async () => {
+        if (pb.authStore.isValid) {
+            await checkUserLike();
+        }
+    });
 
-    function toggleLike() {
-        liked = !liked;
-        votes += liked ? 1 : -1;
-        // TODO hit api
+    async function checkUserLike() {
+        try {
+            const userId = pb.authStore.model.id;
+            
+            const result = await pb.collection('likes').getList(1, 1, {
+                filter: `user="${userId}" && post="${post.id}"`,
+            });
+            
+            if (result.items.length > 0) {
+                liked = true;
+                likeId = result.items[0].id;
+            }
+        } catch (error) {
+            console.error('Error checking if user liked post:', error);
+        }
+    }
+
+    async function toggleLike() {
+        if (!pb.authStore.isValid) {
+            goto('/login');
+            return;
+        }
+
+        try {
+            const userId = pb.authStore.model.id;
+            
+            if (!liked) {
+                // Create a new like
+                const newLike = await pb.collection('likes').create({
+                    user: userId,
+                    post: post.id
+                });
+                likeId = newLike.id;
+                liked = true;
+                votes += 1;
+            } else if (likeId) {
+                // Delete the existing like
+                await pb.collection('likes').delete(likeId);
+                likeId = null;
+                liked = false;
+                votes -= 1;
+            }
+        } catch (error) {
+            console.error('Error toggling like:', error);
+            // Revert UI changes if the API call fails
+            liked = !liked;
+            votes += liked ? 1 : -1;
+        }
     }
 
     function editPost() {
