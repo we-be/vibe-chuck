@@ -1,20 +1,8 @@
 import PocketBase from 'pocketbase';
 import { writable, get } from 'svelte/store';
 
-// Get the PocketBase URL from environment variables or use a default
-const getPocketBaseUrl = () => {
-    const envUrl = import.meta.env.VITE_POCKETBASE_URL;
-    if (envUrl) {
-        // If it's an absolute URL, use it (strip any trailing slash)
-        if (envUrl.startsWith('http://') || envUrl.startsWith('https://')) {
-            return envUrl.replace(/\/+$/, '');
-        }
-        // If it's a relative proxy path (e.g. '/api'), let SDK prefix '/api', so base is empty
-        return '';
-    }
-    // Default fallback to root; SDK will add '/api' prefix
-    return '';
-};
+// Base URL for the PocketBase backend, must be set in .env (e.g. VITE_POCKETBASE_URL=/api)
+const BASE_URL = import.meta.env.VITE_POCKETBASE_URL || '/api';
 
 // Create a writable store for the PocketBase client
 const createPocketBaseStore = () => {
@@ -23,13 +11,13 @@ const createPocketBaseStore = () => {
     return {
         subscribe,
         init: () => {
-            const client = new PocketBase(getPocketBaseUrl());
+            const client = new PocketBase(BASE_URL);
             set(client);
             return client;
         },
         getAuthStore: () => {
             const client = get(pbStore);
-            return client?.authStore || null;
+            return client ? client.authStore : null;
         }
     };
 };
