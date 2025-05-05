@@ -89,8 +89,9 @@
 
 <div class="flex justify-center items-center min-h-screen bg-gradient-to-b from-surface-900 to-surface-800">
     <div class="card p-8 w-full max-w-md shadow-xl bg-surface-50 dark:bg-surface-800 border border-surface-300 dark:border-surface-600">
-        <h1 class="h2 mb-8 text-center font-bold text-primary-700 dark:text-primary-400">{isSignUp ? 'Sign Up' : 'Login'}</h1>
+        <h1 class="h2 mb-8 text-center font-bold text-primary-700 dark:text-primary-400">Login</h1>
 
+        <!-- Manual login form commented out for streamlined experience
         <form on:submit|preventDefault={handleSubmit} class="space-y-6">
             <div class="form-group">
                 <label for="email" class="label font-medium text-surface-700 dark:text-surface-300">Email</label>
@@ -139,11 +140,12 @@
             {/if}
         </form>
 
-        <div class="divider my-6">OR</div>
+        <div class="divider my-6">SIGN IN WITH</div>
+        -->
 
-        <div class="mb-6">
+        <div class="space-y-4">
             {#if Button}
-                <svelte:component this={Button} on:click={loginWithGoogle} variant="soft" color="surface" class="w-full py-3" disabled={loading}>
+                <svelte:component this={Button} on:click={loginWithGoogle} variant="filled" color="primary" class="w-full py-3 font-semibold" disabled={loading}>
                     {#if loading}
                         <span class="spinner mr-2" aria-hidden="true"></span>
                         <span>Connecting...</span>
@@ -151,11 +153,19 @@
                         <svg class="w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512">
                             <path fill="currentColor" d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"/>
                         </svg>
-                        Login with Google
+                        Continue with Google
                     {/if}
                 </svelte:component>
+                
+                <svelte:component this={Button} variant="soft" color="surface" class="w-full py-3 opacity-50 cursor-not-allowed" disabled={true}>
+                    <svg class="w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
+                        <path fill="currentColor" d="M224.1 141c-63.6 0-114.9 51.3-114.9 114.9s51.3 114.9 114.9 114.9S339 319.5 339 255.9 287.7 141 224.1 141zm0 189.6c-41.1 0-74.7-33.5-74.7-74.7s33.5-74.7 74.7-74.7 74.7 33.5 74.7 74.7-33.6 74.7-74.7 74.7zm146.4-194.3c0 14.9-12 26.8-26.8 26.8-14.9 0-26.8-12-26.8-26.8s12-26.8 26.8-26.8 26.8 12 26.8 26.8zm76.1 27.2c-1.7-35.9-9.9-67.7-36.2-93.9-26.2-26.2-58-34.4-93.9-36.2-37-2.1-147.9-2.1-184.9 0-35.8 1.7-67.6 9.9-93.9 36.1s-34.4 58-36.2 93.9c-2.1 37-2.1 147.9 0 184.9 1.7 35.9 9.9 67.7 36.2 93.9s58 34.4 93.9 36.2c37 2.1 147.9 2.1 184.9 0 35.9-1.7 67.7-9.9 93.9-36.2 26.2-26.2 34.4-58 36.2-93.9 2.1-37 2.1-147.8 0-184.8zM398.8 388c-7.8 19.6-22.9 34.7-42.6 42.6-29.5 11.7-99.5 9-132.1 9s-102.7 2.6-132.1-9c-19.6-7.8-34.7-22.9-42.6-42.6-11.7-29.5-9-99.5-9-132.1s-2.6-102.7 9-132.1c7.8-19.6 22.9-34.7 42.6-42.6 29.5-11.7 99.5-9 132.1-9s102.7-2.6 132.1 9c19.6 7.8 34.7 22.9 42.6 42.6 11.7 29.5 9 99.5 9 132.1s2.7 102.7-9 132.1z"/>
+                    </svg>
+                    Continue with Instagram
+                    <span class="ml-2 text-xs">(coming soon)</span>
+                </svelte:component>
             {:else}
-                <button on:click={loginWithGoogle} class="btn variant-soft-surface w-full py-3" disabled={loading}>
+                <button on:click={loginWithGoogle} class="btn variant-filled-primary w-full py-3 font-semibold" disabled={loading}>
                     {#if loading}
                         <span class="spinner mr-2" aria-hidden="true"></span>
                         <span>Connecting...</span>
@@ -163,12 +173,21 @@
                         <svg class="w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512">
                             <path fill="currentColor" d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"/>
                         </svg>
-                        Login with Google
+                        Continue with Google
                     {/if}
+                </button>
+                
+                <button class="btn variant-soft-surface w-full py-3 opacity-50 cursor-not-allowed" disabled={true}>
+                    <svg class="w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
+                        <path fill="currentColor" d="M224.1 141c-63.6 0-114.9 51.3-114.9 114.9s51.3 114.9 114.9 114.9S339 319.5 339 255.9 287.7 141 224.1 141zm0 189.6c-41.1 0-74.7-33.5-74.7-74.7s33.5-74.7 74.7-74.7 74.7 33.5 74.7 74.7-33.6 74.7-74.7 74.7zm146.4-194.3c0 14.9-12 26.8-26.8 26.8-14.9 0-26.8-12-26.8-26.8s12-26.8 26.8-26.8 26.8 12 26.8 26.8zm76.1 27.2c-1.7-35.9-9.9-67.7-36.2-93.9-26.2-26.2-58-34.4-93.9-36.2-37-2.1-147.9-2.1-184.9 0-35.8 1.7-67.6 9.9-93.9 36.1s-34.4 58-36.2 93.9c-2.1 37-2.1 147.9 0 184.9 1.7 35.9 9.9 67.7 36.2 93.9s58 34.4 93.9 36.2c37 2.1 147.9 2.1 184.9 0 35.9-1.7 67.7-9.9 93.9-36.2 26.2-26.2 34.4-58 36.2-93.9 2.1-37 2.1-147.8 0-184.8zM398.8 388c-7.8 19.6-22.9 34.7-42.6 42.6-29.5 11.7-99.5 9-132.1 9s-102.7 2.6-132.1-9c-19.6-7.8-34.7-22.9-42.6-42.6-11.7-29.5-9-99.5-9-132.1s-2.6-102.7 9-132.1c7.8-19.6 22.9-34.7 42.6-42.6 29.5-11.7 99.5-9 132.1-9s102.7-2.6 132.1 9c19.6 7.8 34.7 22.9 42.6 42.6 11.7 29.5 9 99.5 9 132.1s2.7 102.7-9 132.1z"/>
+                    </svg>
+                    Continue with Instagram
+                    <span class="ml-2 text-xs">(coming soon)</span>
                 </button>
             {/if}
         </div>
-
+        
+        <!-- Toggle sign-up/login mode removed for streamlined login
         <div class="text-center">
             {#if Button}
                 <svelte:component this={Button} on:click={toggleMode} variant="ghost" color="secondary" class="font-medium">
@@ -180,6 +199,7 @@
                 </button>
             {/if}
         </div>
+        -->
 
         {#if error}
             <div class="mt-6 p-3 bg-error-100 dark:bg-error-900/30 border border-error-300 dark:border-error-700 rounded-container-token">
