@@ -1,14 +1,20 @@
 #!/bin/bash
-set -eux
+# Exit on errors, except where explicitly handled
+set -eu
 
-# Wait up to 30s for the SvelteKit server to respond
-timeout=30
-count=0
-while ! curl -sf http://localhost:4173; do
-  ((count++))
-  if [ $count -ge $timeout ]; then
-    echo "ERROR: SvelteKit frontend failed to come up"
-    exit 1
+# Health check configuration
+HOST=127.0.0.1
+PORT=4173
+MAX_RETRIES=30
+RETRY_INTERVAL=1
+
+# Try up to MAX_RETRIES times (waiting RETRY_INTERVAL seconds between attempts)
+for i in $(seq 1 $MAX_RETRIES); do
+  if curl -sf --ipv4 "http://${HOST}:${PORT}" >/dev/null; then
+    exit 0
   fi
-  sleep 1
+  sleep $RETRY_INTERVAL
 done
+
+echo "ERROR: SvelteKit preview did not respond after ${MAX_RETRIES} seconds at ${HOST}:${PORT}"
+exit 1
