@@ -119,10 +119,19 @@
     <svelte:fragment slot="header">
         <AppBar>
             <svelte:fragment slot="lead">
-                <Shell class="mr-2" />
-                <strong class="text-xl uppercase"
-                    ><span class="gradient-heading">Vibe Chuck</span></strong
+                <div 
+                    class="flex items-center cursor-pointer" 
+                    on:click={() => goto('/')}
+                    on:keydown={(e) => e.key === 'Enter' && goto('/')}
+                    tabindex="0"
+                    role="link"
+                    aria-label="Go to home page"
                 >
+                    <Shell class="mr-2" />
+                    <strong class="text-xl uppercase"
+                        ><span class="gradient-heading">Vibe Chuck</span></strong
+                    >
+                </div>
                 <button
                     type="button"
                     class="btn-icon btn-icon-sm bg-gradient-to-br variant-gradient-tertiary-primary ml-6"
