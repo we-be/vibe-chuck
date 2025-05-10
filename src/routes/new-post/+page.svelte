@@ -15,10 +15,8 @@
             await fetchEvents();
         }
         
-        // Use the first available event if there's at least one
-        if ($events.length > 0) {
-            eventId = $events[0].id;
-        }
+        // Don't automatically select an event, let the user choose
+        eventId = "";
     });
     const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB in bytes
 
@@ -55,16 +53,7 @@
             }
             
             if (!eventId) {
-                // If we don't have an event ID yet, try to get one
-                if ($events.length === 0) {
-                    await fetchEvents();
-                }
-                
-                if ($events.length > 0) {
-                    eventId = $events[0].id;
-                } else {
-                    throw new Error('No events available. Please try again later.');
-                }
+                throw new Error('Please select an event for your post.');
             }
 
             const formData = new FormData();
@@ -149,6 +138,19 @@
                     bind:value={description}
                     required
                 ></textarea>
+            </label>
+            <label class="label">
+                <span>Event</span>
+                <select 
+                    class="select px-4 py-2"
+                    bind:value={eventId}
+                    required
+                >
+                    <option value="">Select an event</option>
+                    {#each $events as event}
+                        <option value={event.id}>{event.displayName}</option>
+                    {/each}
+                </select>
             </label>
             <label class="label">
                 <span>Upload Images (Max 10MB per image)</span>
