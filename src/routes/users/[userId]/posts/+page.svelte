@@ -23,7 +23,10 @@
 
 <div class="posts-container">
     {#each posts as post (post.id)}
-        <Post {post} {canEdit} on:openFullScreen={openFullScreen} />
+        <Post {post} {canEdit} on:openFullScreen={openFullScreen} on:postDeleted={() => {
+            // Refresh the page when a post is deleted
+            window.location.reload();
+        }} />
     {/each}
 </div>
 
