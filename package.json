@@ -23,6 +23,7 @@
   },
   "type": "module",
   "dependencies": {
+    "browser-image-compression": "^2.0.2",
     "lucide-svelte": "^0.447.0",
     "pocketbase": "^0.21.5",
     "siema": "^1.5.1"

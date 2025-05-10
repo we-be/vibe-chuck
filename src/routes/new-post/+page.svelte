@@ -5,6 +5,7 @@
     import { getToastStore } from '@skeletonlabs/skeleton';
     import { events, fetchEvents } from '$lib/stores/events';
     import { onMount } from 'svelte';
+    import imageCompression from 'browser-image-compression';
 
     let eventId = "";
     const toastStore = getToastStore();
@@ -19,26 +20,99 @@
         eventId = "";
     });
     const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB in bytes
+    const MAX_DIMENSION = 1920; // Max width or height for images
+    const DEFAULT_QUALITY = 0.8; // Default compression quality (0-1)
 
     let title = '';
     let description = '';
     let files = [];
+    let originalFiles = []; // Store the original files for reference
     let previewUrls = writable([]);
     let isLoading = false;
+    let isCompressing = false; // Track compression state
+    let compressionProgress = 0; // Track compression progress
     let error = null;
 
     function handleFileSelect(event) {
-        files = event.target.files;
-        const urls = [];
-        for (let i = 0; i < files.length; i++) {
-            urls.push(URL.createObjectURL(files[i]));
-        }
+        originalFiles = Array.from(event.target.files);
+        files = originalFiles; // Initially set files to original
+        
+        // Generate preview URLs for original files
+        const urls = originalFiles.map(file => URL.createObjectURL(file));
         previewUrls.set(urls);
     }
 
     function clearFiles() {
         files = [];
+        originalFiles = [];
         previewUrls.set([]);
+        compressionProgress = 0;
+    }
+
+    // Function to compress images that are too large
+    async function compressImages() {
+        isCompressing = true;
+        compressionProgress = 0;
+        
+        try {
+            const compressedFiles = [];
+            const totalFiles = originalFiles.length;
+            
+            // Process each file
+            for (let i = 0; i < totalFiles; i++) {
+                const file = originalFiles[i];
+                
+                // If file is already under the size limit, keep it as is
+                if (file.size <= MAX_FILE_SIZE) {
+                    compressedFiles.push(file);
+                } else {
+                    // Configure compression options
+                    const options = {
+                        maxSizeMB: MAX_FILE_SIZE / (1024 * 1024), // Convert bytes to MB
+                        maxWidthOrHeight: MAX_DIMENSION,
+                        useWebWorker: true,
+                        fileType: file.type,
+                        initialQuality: DEFAULT_QUALITY,
+                        onProgress: (percent) => {
+                            compressionProgress = ((i / totalFiles) * 100) + (percent / totalFiles);
+                        }
+                    };
+                    
+                    // Compress the image
+                    const compressedFile = await imageCompression(file, options);
+                    
+                    console.log(`Original size: ${file.size / 1024 / 1024} MB`);
+                    console.log(`Compressed size: ${compressedFile.size / 1024 / 1024} MB`);
+                    
+                    compressedFiles.push(compressedFile);
+                }
+                
+                // Update overall progress
+                compressionProgress = ((i + 1) / totalFiles) * 100;
+            }
+            
+            // Update files array with compressed files
+            files = compressedFiles;
+            
+            // Update preview URLs with compressed files
+            const urls = compressedFiles.map(file => URL.createObjectURL(file));
+            previewUrls.set(urls);
+            
+            return true;
+        } catch (err) {
+            console.error('Error compressing images:', err);
+            error = `Error compressing images: ${err.message}`;
+            
+            toastStore.trigger({
+                message: error,
+                background: 'variant-filled-error'
+            });
+            
+            return false;
+        } finally {
+            isCompressing = false;
+            compressionProgress = 100;
+        }
     }
 
     async function handleSubmit() {
@@ -55,6 +129,16 @@
             if (!eventId) {
                 throw new Error('Please select an event for your post.');
             }
+            
+            // Check if any files exceed the size limit and compress if needed
+            const needsCompression = originalFiles.some(file => file.size > MAX_FILE_SIZE);
+            if (needsCompression) {
+                const compressionSuccess = await compressImages();
+                if (!compressionSuccess) {
+                    // Compression failed, stop the submission
+                    return;
+                }
+            }
 
             const formData = new FormData();
             formData.append('title', title);
@@ -62,11 +146,8 @@
             formData.append('event', eventId);
             formData.append('op', pb.authStore.model.id);
             
-            // Check file sizes and add images to formdata
+            // Add images to formdata (already compressed if needed)
             for (let file of files) {
-                if (file.size > MAX_FILE_SIZE) {
-                    throw new Error(`File "${file.name}" exceeds the maximum size of 10MB.`);
-                }
                 formData.append('imgs', file);
             }
 
@@ -153,7 +234,7 @@
                 </select>
             </label>
             <label class="label">
-                <span>Upload Images (Max 10MB per image)</span>
+                <span>Upload Images (Max 10MB per image - larger images will be compressed automatically)</span>
                 <input
                     type="file"
                     class="input px-4 py-2"
@@ -163,12 +244,37 @@
                 />
             </label>
             {#if files.length > 0}
-                <p class="text-sm">{files.length} file(s) selected</p>
-                <button type="button" class="btn variant-filled-secondary" on:click={clearFiles}>Clear Files</button>
+                <div class="flex justify-between items-center mb-2">
+                    <p class="text-sm">{files.length} file(s) selected</p>
+                    <button type="button" class="btn variant-filled-secondary" on:click={clearFiles}>Clear Files</button>
+                </div>
+                
+                {#if originalFiles.some(file => file.size > MAX_FILE_SIZE)}
+                    <div class="alert variant-soft-warning mb-2">
+                        <p class="text-sm">One or more files exceed 10MB and will be compressed during upload.</p>
+                    </div>
+                {/if}
             {/if}
-            <button type="submit" class="btn variant-filled-primary w-full" disabled={isLoading}>
-                {isLoading ? 'Creating Post...' : 'Create Post'}
+            
+            {#if isCompressing}
+                <div class="mb-2">
+                    <p class="text-sm">Compressing images: {Math.round(compressionProgress)}%</p>
+                    <div class="progress-bar bg-gray-200 h-2 rounded-full overflow-hidden">
+                        <div class="bg-primary-500 h-full" style="width: {compressionProgress}%"></div>
+                    </div>
+                </div>
+            {/if}
+            
+            <button type="submit" class="btn variant-filled-primary w-full" disabled={isLoading || isCompressing}>
+                {#if isLoading}
+                    Creating Post...
+                {:else if isCompressing}
+                    Compressing Images...
+                {:else}
+                    Create Post
+                {/if}
             </button>
+            
             {#if error}
                 <p class="text-error-500">{error}</p>
             {/if}
