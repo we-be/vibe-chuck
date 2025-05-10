@@ -4,6 +4,15 @@ export const load = async ({ params, url }) => {
   console.log('Load function called with params:', params);
   const pb = await pbStore.init(); // Ensure the client is initialized
   const eventId = params.eventId;
+  
+  // Check if user is authenticated
+  let canEdit = false;
+  let currentUserId = null;
+  
+  if (pb.authStore.isValid) {
+    canEdit = true;
+    currentUserId = pb.authStore.model.id;
+  }
 
   // Get pagination parameters from the URL
   const page = parseInt(url.searchParams.get('page') || '1');
@@ -14,7 +23,6 @@ export const load = async ({ params, url }) => {
     const { items: records, totalItems } = await pb.collection('posts').getList(page, perPage, {
       filter: `event = "${eventId}" && rank > 0`,  // rank of zero means its brand new
       sort: 'rank',
-      expand: 'op',
     });
 
     // Map over records to construct image URLs and include user information
@@ -27,7 +35,7 @@ export const load = async ({ params, url }) => {
         rank: record.rank,
         event: record.event,
         description: record.description,
-        op: record.expand?.op?.username || record.op, // try to expand user or fall back on id
+        op: record.op, // use the original poster ID for checking ownership
         votes: record.votes
       };
     });
@@ -40,6 +48,8 @@ export const load = async ({ params, url }) => {
         totalItems,
         totalPages: Math.ceil(totalItems / perPage)
       },
+      canEdit,
+      currentUserId,
       error: null,
     };
   } catch (err) {
@@ -52,6 +62,8 @@ export const load = async ({ params, url }) => {
         totalItems: 0,
         totalPages: 0
       },
+      canEdit: false,
+      currentUserId: null,
       error: err.message,
     };
   }

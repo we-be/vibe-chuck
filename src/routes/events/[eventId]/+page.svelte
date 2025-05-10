@@ -25,23 +25,32 @@
 
 <div class="posts-container">
     {#each posts as post (post.id)}
-        <Post {post} on:openFullScreen={openFullScreen} />
+        <Post {post} canEdit={$page.data.canEdit && post.op === $page.data.currentUserId} on:openFullScreen={openFullScreen} on:postDeleted={() => {
+            // Refresh the page when a post is deleted
+            window.location.reload();
+        }} />
     {/each}
 </div>
 
 <!-- Pagination controls -->
-<div class="pagination">
-    <button on:click={() => changePage(pagination.page - 1)} disabled={pagination.page === 1}>
-        Previous
-    </button>
-    <span>Page {pagination.page} of {pagination.totalPages}</span>
-    <button on:click={() => changePage(pagination.page + 1)} disabled={pagination.page === pagination.totalPages}>
-        Next
-    </button>
-</div>
+{#if pagination.totalPages > 1}
+    <div class="pagination">
+        <button on:click={() => changePage(pagination.page - 1)} disabled={pagination.page === 1}>
+            Previous
+        </button>
+        <span>Page {pagination.page} of {pagination.totalPages}</span>
+        <button on:click={() => changePage(pagination.page + 1)} disabled={pagination.page === pagination.totalPages}>
+            Next
+        </button>
+    </div>
+{/if}
 
 {#if fullScreenPost}
-    <FullScreenPost post={fullScreenPost} on:close={closeFullScreen} />
+    <FullScreenPost 
+        post={fullScreenPost}
+        canEdit={$page.data.canEdit && fullScreenPost.op === $page.data.currentUserId}
+        on:close={closeFullScreen} 
+    />
 {/if}
 
 <style>

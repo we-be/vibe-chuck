@@ -4,6 +4,15 @@ export const load = async () => {
   try {
     const pb = await pbStore.init(); // Ensure the client is initialized
     
+    // Check if user is authenticated
+    let canEdit = false;
+    let currentUserId = null;
+    
+    if (pb.authStore.isValid) {
+      canEdit = true;
+      currentUserId = pb.authStore.model.id;
+    }
+    
     // Fetch all events
     const events = await pb.collection('events').getFullList({
       sort: '-start',
@@ -21,7 +30,6 @@ export const load = async () => {
       const { items } = await pb.collection('posts').getList(1, 2, {
         filter: `event = "${event.id}" && rank > 0`,
         sort: 'rank',
-        expand: 'op',
       });
       
       if (items.length > 0) {
@@ -35,7 +43,7 @@ export const load = async () => {
             rank: record.rank,
             event: record.event,
             description: record.description,
-            op: record.expand?.op?.username || record.op,
+            op: record.op, // Keep the original poster ID for authorization checks
             votes: record.votes,
             eventDisplayName: event.displayName
           };
@@ -50,12 +58,16 @@ export const load = async () => {
     topPosts = topPosts.slice(0, 6);
     
     return {
-      topPosts
+      topPosts,
+      canEdit,
+      currentUserId
     };
   } catch (err) {
     console.error('Error fetching data for landing page:', err);
     return {
-      topPosts: []
+      topPosts: [],
+      canEdit: false,
+      currentUserId: null
     };
   }
 };

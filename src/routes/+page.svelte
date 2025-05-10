@@ -123,7 +123,15 @@
                             easing: elasticOut 
                         }}>
                             <div class="relative">
-                                <Post {post} on:openFullScreen={openFullScreen} />
+                                <Post 
+                                    {post} 
+                                    canEdit={data.canEdit && post.op === data.currentUserId}
+                                    on:openFullScreen={openFullScreen}
+                                    on:postDeleted={() => {
+                                        // Refresh the page when a post is deleted
+                                        window.location.reload();
+                                    }}
+                                />
                                 <div class="absolute top-3 right-3 z-20">
                                     <span class="badge variant-filled-secondary">{post.eventDisplayName}</span>
                                 </div>
@@ -137,5 +145,9 @@
 </div>
 
 {#if fullScreenPost}
-    <FullScreenPost post={fullScreenPost} on:close={closeFullScreen} />
+    <FullScreenPost 
+        post={fullScreenPost} 
+        canEdit={data.canEdit && fullScreenPost.op === data.currentUserId}
+        on:close={closeFullScreen} 
+    />
 {/if}
