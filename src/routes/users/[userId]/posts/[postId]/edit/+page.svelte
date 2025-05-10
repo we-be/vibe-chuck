@@ -3,15 +3,26 @@
     import { pbStore } from '$lib/pocketbase';
     import { goto } from '$app/navigation';
     import { getToastStore } from '@skeletonlabs/skeleton';
+    import { onMount } from 'svelte';
+    import { events, fetchEvents } from '$lib/stores/events';
+    
     export let data;
     const { post, userId } = data;
     let title = post.title;
     let description = post.description;
+    let eventId = post.event;
     let files = [];
     let previewUrls = writable([]);
     let isLoading = false;
     let error = null;
     const toastStore = getToastStore();
+    
+    onMount(async () => {
+        // Fetch events if needed
+        if ($events.length === 0) {
+            await fetchEvents();
+        }
+    });
 
     function handleFileSelect(event) {
         files = event.target.files;
@@ -24,10 +35,15 @@
         error = null;
         try {
             const pb = await pbStore.init();
+            
+            if (!eventId) {
+                throw new Error('Please select an event for your post.');
+            }
+            
             const formData = new FormData();
             formData.append('title', title);
             formData.append('description', description);
-            formData.append('event', post.event);
+            formData.append('event', eventId);
             for (const file of files) {
                 formData.append('imgs', file);
             }
@@ -57,6 +73,19 @@
             <label class="label">
                 <span>Description</span>
                 <textarea bind:value={description} class="textarea px-4 py-2" rows="3" required />
+            </label>
+            <label class="label">
+                <span>Event</span>
+                <select 
+                    class="select px-4 py-2"
+                    bind:value={eventId}
+                    required
+                >
+                    <option value="">Select an event</option>
+                    {#each $events as event}
+                        <option value={event.id}>{event.displayName}</option>
+                    {/each}
+                </select>
             </label>
             <label class="label">
                 <span>Upload New Images (optional)</span>
