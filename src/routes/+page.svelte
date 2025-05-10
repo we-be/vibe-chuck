@@ -72,14 +72,7 @@
 </script>
 
 <div class="flex flex-col items-center justify-center min-h-screen py-16 space-y-10">
-    <h2 
-        class="flex items-center space-x-4 text-8xl uppercase mb-8 cursor-pointer"
-        on:click={() => goto('/')}
-        on:keydown={(e) => e.key === 'Enter' && goto('/')}
-        tabindex="0"
-        role="link"
-        aria-label="Go to home page"
-    >
+    <h2 class="flex items-center space-x-4 text-8xl uppercase mb-8">
         <Shell class="w-16 h-16" />
         <span class="bg-clip-text text-transparent bg-gradient-to-br variant-gradient-tertiary-primary">
             VIBE CHUCK
