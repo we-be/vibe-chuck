@@ -25,7 +25,7 @@
 
 <div class="posts-container">
     {#each posts as post (post.id)}
-        <Post {post} canEdit={$page.data.canEdit && post.op === $page.data.currentUserId} on:openFullScreen={openFullScreen} on:postDeleted={() => {
+        <Post {post} canEdit={false} on:openFullScreen={openFullScreen} on:postDeleted={() => {
             // Refresh the page when a post is deleted
             window.location.reload();
         }} />
@@ -48,7 +48,7 @@
 {#if fullScreenPost}
     <FullScreenPost 
         post={fullScreenPost}
-        canEdit={$page.data.canEdit && fullScreenPost.op === $page.data.currentUserId}
+        canEdit={false}
         on:close={closeFullScreen} 
     />
 {/if}
