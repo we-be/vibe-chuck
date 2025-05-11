@@ -162,10 +162,15 @@
         <div class="text-overlay">
             <div class="title-container">
                 <h2>{post.title}</h2>
-                {#if post.rank}
+                {#if post.hasRank && post.rank}
                     <span class="badge-icon variant-filled-primary">
                         <Hash size={9} />
                         <span>{post.rank}</span>
+                    </span>
+                {:else if !post.hasRank}
+                    <span class="badge-icon variant-filled-secondary">
+                        <Hash size={9} />
+                        <span>New</span>
                     </span>
                 {/if}
             </div>

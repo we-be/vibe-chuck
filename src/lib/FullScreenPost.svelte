@@ -106,10 +106,15 @@
         </Carousel>
         <div class="info">
             <h2>{post.title}</h2>
-            {#if post.rank}
+            {#if post.hasRank && post.rank}
                 <span class="badge-icon variant-filled-primary">
                     <Hash size={9} />
                     <span>{post.rank}</span>
+                </span>
+            {:else if !post.hasRank}
+                <span class="badge-icon variant-filled-secondary">
+                    <Hash size={9} />
+                    <span>New</span>
                 </span>
             {/if}
             <p class="op"><i>@{post.opName || post.op}</i></p>
