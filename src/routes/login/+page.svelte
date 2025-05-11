@@ -44,7 +44,8 @@
                 error = `${provider} login failed. Please try again.`;
             }
         } catch (err) {
-            console.error('Login error:', err);
+            console.error(`Login error with ${provider}:`, err);
+            console.log('Error details:', JSON.stringify(err, null, 2));
             error = `An error occurred during ${provider} login. Please try again.`;
         } finally {
             loading = false;
@@ -56,7 +57,7 @@
     }
 
     function loginWithInstagram() {
-        return loginWithOAuth('instagram2');
+        return loginWithOAuth('instagram');
     }
 
     async function handleSubmit() {
