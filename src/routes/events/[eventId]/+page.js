@@ -21,8 +21,8 @@ export const load = async ({ params, url }) => {
   try {
     // Fetch paginated posts for the selected event
     const { items: records, totalItems } = await pb.collection('posts').getList(page, perPage, {
-      filter: `event = "${eventId}" && rank > 0`,  // rank of zero means its brand new
-      sort: 'rank',
+      filter: `event = "${eventId}"`,  // include all posts, even those with no rank
+      sort: 'rank',  // posts with rank=0 or null will come last
       expand: 'op',
     });
 
