@@ -43,7 +43,8 @@ export const load = async ({ params, url }) => {
                 votes: record.votes,
                 // use the 'op' field (original poster ID) for routing edits
                 op: record.op,
-                opName: record.expand?.op?.name || record.expand?.op?.username || 'Unknown User'
+                opName: record.expand?.op?.name || record.expand?.op?.username || 'Unknown User',
+                hasRank: record.rank > 0 ? true : false // Add hasRank flag for proper badge display
             };
         });
 
