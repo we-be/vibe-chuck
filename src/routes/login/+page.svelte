@@ -33,15 +33,15 @@
             loading = true;
 
             // Debug: Print OAuth providers available in PocketBase
-            if (provider === 'instagram') {
-                console.log('Starting Instagram OAuth2 flow...');
-                // Debug info for Instagram OAuth
+            if (provider === 'instagram' || provider === 'facebook') {
+                console.log(`Starting ${provider} OAuth2 flow...`);
+                // Debug info for OAuth
                 try {
                     const authMethods = await pb.collection('users').listAuthMethods();
                     const providerInfo = authMethods.authProviders.find(p => p.name === provider);
                     console.log('Provider config:', JSON.stringify(providerInfo, null, 2));
                 } catch (e) {
-                    console.error('Error getting auth methods:', e);
+                    console.error(`Error getting auth methods for ${provider}:`, e);
                 }
             }
 
@@ -72,6 +72,10 @@
 
     function loginWithInstagram() {
         return loginWithOAuth('instagram');
+    }
+
+    function loginWithFacebook() {
+        return loginWithOAuth('facebook');
     }
 
     async function handleSubmit() {
@@ -180,6 +184,18 @@
                     {/if}
                 </svelte:component>
                 
+                <svelte:component this={Button} on:click={loginWithFacebook} variant="filled" color="blue" class="w-full py-3 font-semibold" disabled={loading}>
+                    {#if loading}
+                        <span class="spinner mr-2" aria-hidden="true"></span>
+                        <span>Connecting...</span>
+                    {:else}
+                        <svg class="w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                            <path fill="currentColor" d="M504 256C504 119 393 8 256 8S8 119 8 256c0 123.78 90.69 226.38 209.25 245V327.69h-63V256h63v-54.64c0-62.15 37-96.48 93.67-96.48 27.14 0 55.52 4.84 55.52 4.84v61h-31.28c-30.8 0-40.41 19.12-40.41 38.73V256h68.78l-11 71.69h-57.78V501C413.31 482.38 504 379.78 504 256z"/>
+                        </svg>
+                        Continue with Facebook
+                    {/if}
+                </svelte:component>
+
                 <svelte:component this={Button} on:click={loginWithInstagram} variant="filled" color="secondary" class="w-full py-3 font-semibold" disabled={loading}>
                     {#if loading}
                         <span class="spinner mr-2" aria-hidden="true"></span>
@@ -204,6 +220,18 @@
                     {/if}
                 </button>
                 
+                <button on:click={loginWithFacebook} class="btn variant-filled-blue w-full py-3 font-semibold" disabled={loading}>
+                    {#if loading}
+                        <span class="spinner mr-2" aria-hidden="true"></span>
+                        <span>Connecting...</span>
+                    {:else}
+                        <svg class="w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                            <path fill="currentColor" d="M504 256C504 119 393 8 256 8S8 119 8 256c0 123.78 90.69 226.38 209.25 245V327.69h-63V256h63v-54.64c0-62.15 37-96.48 93.67-96.48 27.14 0 55.52 4.84 55.52 4.84v61h-31.28c-30.8 0-40.41 19.12-40.41 38.73V256h68.78l-11 71.69h-57.78V501C413.31 482.38 504 379.78 504 256z"/>
+                        </svg>
+                        Continue with Facebook
+                    {/if}
+                </button>
+
                 <button on:click={loginWithInstagram} class="btn variant-filled-secondary w-full py-3 font-semibold" disabled={loading}>
                     {#if loading}
                         <span class="spinner mr-2" aria-hidden="true"></span>
