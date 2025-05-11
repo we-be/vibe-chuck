@@ -184,7 +184,7 @@
                     {/if}
                 </svelte:component>
                 
-                <svelte:component this={Button} on:click={loginWithFacebook} variant="filled" color="blue" class="w-full py-3 font-semibold" disabled={loading}>
+                <svelte:component this={Button} on:click={loginWithFacebook} variant="filled" style="background-color: #1877F2; color: white;" class="w-full py-3 font-semibold" disabled={loading}>
                     {#if loading}
                         <span class="spinner mr-2" aria-hidden="true"></span>
                         <span>Connecting...</span>
@@ -196,7 +196,7 @@
                     {/if}
                 </svelte:component>
 
-                <svelte:component this={Button} on:click={loginWithInstagram} variant="filled" color="secondary" class="w-full py-3 font-semibold" disabled={loading}>
+                <svelte:component this={Button} on:click={loginWithInstagram} variant="filled" style="background-color: #E1306C; color: white;" class="w-full py-3 font-semibold" disabled={loading}>
                     {#if loading}
                         <span class="spinner mr-2" aria-hidden="true"></span>
                         <span>Connecting...</span>
@@ -220,7 +220,7 @@
                     {/if}
                 </button>
                 
-                <button on:click={loginWithFacebook} class="btn variant-filled-blue w-full py-3 font-semibold" disabled={loading}>
+                <button on:click={loginWithFacebook} class="btn w-full py-3 font-semibold" style="background-color: #1877F2; color: white;" disabled={loading}>
                     {#if loading}
                         <span class="spinner mr-2" aria-hidden="true"></span>
                         <span>Connecting...</span>
@@ -232,7 +232,7 @@
                     {/if}
                 </button>
 
-                <button on:click={loginWithInstagram} class="btn variant-filled-secondary w-full py-3 font-semibold" disabled={loading}>
+                <button on:click={loginWithInstagram} class="btn w-full py-3 font-semibold" style="background-color: #E1306C; color: white;" disabled={loading}>
                     {#if loading}
                         <span class="spinner mr-2" aria-hidden="true"></span>
                         <span>Connecting...</span>
