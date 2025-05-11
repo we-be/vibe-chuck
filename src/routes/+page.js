@@ -28,7 +28,7 @@ export const load = async () => {
     // Fetch top 2 posts for each active event
     for (const event of activeEvents) {
       const { items } = await pb.collection('posts').getList(1, 2, {
-        filter: `event = "${event.id}" && rank > 0`,
+        filter: `event = "${event.id}" && rank > 0`,  // only show ranked posts on homepage
         sort: 'rank',
         expand: 'op',
       });
@@ -47,7 +47,8 @@ export const load = async () => {
             op: record.op, // Keep the original poster ID for authorization checks
             opName: record.expand?.op?.name || record.expand?.op?.username || 'Unknown User',
             votes: record.votes,
-            eventDisplayName: event.displayName
+            eventDisplayName: event.displayName,
+            hasRank: record.rank > 0 ? true : false // Only posts with rank > 0 appear on homepage
           };
         });
         

@@ -19,28 +19,42 @@ export const load = async ({ params, url }) => {
   const perPage = parseInt(url.searchParams.get('perPage') || '5');
 
   try {
-    // Fetch paginated posts for the selected event
-    const { items: records, totalItems } = await pb.collection('posts').getList(page, perPage, {
-      filter: `event = "${eventId}" && rank > 0`,  // rank of zero means its brand new
-      sort: 'rank',
+    // Fetch all posts for the selected event without server-side sorting
+    const { items: records, totalItems } = await pb.collection('posts').getList(1, 100, {
+      filter: `event = "${eventId}"`,  // include all posts, even those with no rank
       expand: 'op',
     });
 
     // Map over records to construct image URLs and include user information
-    const posts = records.map((record) => {
+    let posts = records.map((record) => {
       const imgs = record.imgs?.map(img => pb.getFileUrl(record, img)) || [];
       return {
         id: record.id,
         title: record.title,
         imgs,
-        rank: record.rank,
+        rank: record.rank || 999999, // Use high number for unranked posts for sorting
         event: record.event,
         description: record.description,
         op: record.op, // use the original poster ID for checking ownership
         opName: record.expand?.op?.name || record.expand?.op?.username || 'Unknown User',
-        votes: record.votes
+        votes: record.votes,
+        hasRank: record.rank ? true : false // Flag to identify if it has a real rank
       };
     });
+
+    // Sort with ranked posts first, then unranked posts by creation date
+    posts.sort((a, b) => {
+      // If one has rank and the other doesn't, prioritize the ranked one
+      if (a.hasRank && !b.hasRank) return -1;
+      if (!a.hasRank && b.hasRank) return 1;
+
+      // If both have ranks or both don't, sort by rank
+      return a.rank - b.rank;
+    });
+
+    // Apply pagination
+    const startIndex = (page - 1) * perPage;
+    posts = posts.slice(startIndex, startIndex + perPage);
 
     return {
       posts,
