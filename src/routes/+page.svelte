@@ -125,7 +125,7 @@
                             <div class="relative">
                                 <Post 
                                     {post} 
-                                    canEdit={data.canEdit && post.op === data.currentUserId}
+                                    canEdit={false}
                                     on:openFullScreen={openFullScreen}
                                     on:postDeleted={() => {
                                         // Refresh the page when a post is deleted
@@ -147,7 +147,7 @@
 {#if fullScreenPost}
     <FullScreenPost 
         post={fullScreenPost} 
-        canEdit={data.canEdit && fullScreenPost.op === data.currentUserId}
+        canEdit={false}
         on:close={closeFullScreen} 
     />
 {/if}
