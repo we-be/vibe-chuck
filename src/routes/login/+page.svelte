@@ -31,6 +31,20 @@
     async function loginWithOAuth(provider) {
         try {
             loading = true;
+
+            // Debug: Print OAuth providers available in PocketBase
+            if (provider === 'instagram') {
+                console.log('Starting Instagram OAuth2 flow...');
+                // Debug info for Instagram OAuth
+                try {
+                    const authMethods = await pb.collection('users').listAuthMethods();
+                    const providerInfo = authMethods.authProviders.find(p => p.name === provider);
+                    console.log('Provider config:', JSON.stringify(providerInfo, null, 2));
+                } catch (e) {
+                    console.error('Error getting auth methods:', e);
+                }
+            }
+
             const authData = await pb.collection('users').authWithOAuth2({ provider });
 
             if (pb.authStore.isValid) {
@@ -223,6 +237,10 @@
                 <p class="text-sm text-error-700 dark:text-error-400" role="alert">{error}</p>
             </div>
         {/if}
+
+        <div class="mt-6 text-center">
+            <a href="/privacy" class="text-sm text-primary-500 hover:underline">Privacy Policy</a>
+        </div>
     </div>
 </div>
 
