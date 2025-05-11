@@ -170,7 +170,7 @@
                 {/if}
             </div>
             {#if !canEdit}
-                <p class="op"><i><sub>@{post.op}</sub></i></p>
+                <p class="op"><i><sub>@{post.opName || post.op}</sub></i></p>
             {/if}
             {#if post.description}
                 <p class="event">{post.description}</p>

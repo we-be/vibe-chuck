@@ -24,6 +24,7 @@ export const load = async ({ params, url }) => {
         // Fetch posts
         const { items: records, totalItems: total } = await pb.collection('posts').getList(page, perPage, {
             filter: `op = "${userId}"`,
+            expand: 'op',
             // sort: '-created'
         });
 
@@ -41,7 +42,8 @@ export const load = async ({ params, url }) => {
                 description: record.description,
                 votes: record.votes,
                 // use the 'op' field (original poster ID) for routing edits
-                op: record.op
+                op: record.op,
+                opName: record.expand?.op?.name || record.expand?.op?.username || 'Unknown User'
             };
         });
 

@@ -23,6 +23,7 @@ export const load = async ({ params, url }) => {
     const { items: records, totalItems } = await pb.collection('posts').getList(page, perPage, {
       filter: `event = "${eventId}" && rank > 0`,  // rank of zero means its brand new
       sort: 'rank',
+      expand: 'op',
     });
 
     // Map over records to construct image URLs and include user information
@@ -36,6 +37,7 @@ export const load = async ({ params, url }) => {
         event: record.event,
         description: record.description,
         op: record.op, // use the original poster ID for checking ownership
+        opName: record.expand?.op?.name || record.expand?.op?.username || 'Unknown User',
         votes: record.votes
       };
     });

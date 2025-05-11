@@ -30,6 +30,7 @@ export const load = async () => {
       const { items } = await pb.collection('posts').getList(1, 2, {
         filter: `event = "${event.id}" && rank > 0`,
         sort: 'rank',
+        expand: 'op',
       });
       
       if (items.length > 0) {
@@ -44,6 +45,7 @@ export const load = async () => {
             event: record.event,
             description: record.description,
             op: record.op, // Keep the original poster ID for authorization checks
+            opName: record.expand?.op?.name || record.expand?.op?.username || 'Unknown User',
             votes: record.votes,
             eventDisplayName: event.displayName
           };

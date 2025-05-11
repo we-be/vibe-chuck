@@ -112,7 +112,7 @@
                     <span>{post.rank}</span>
                 </span>
             {/if}
-            <p class="op"><i>@{post.op}</i></p>
+            <p class="op"><i>@{post.opName || post.op}</i></p>
             {#if post.description}
                 <p class="description">{post.description}</p>
             {/if}
