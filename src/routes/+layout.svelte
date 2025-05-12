@@ -153,7 +153,6 @@
                     type="button"
                     class="btn btn-sm variant-filled-primary ml-6 flex items-center"
                     on:click={navigateToNewPost}
-                    disabled={!$isLoggedIn}
                     title={$isLoggedIn ? "Create a new post" : "Login to create a post"}
                     aria-label="Create a new post"
                 >
@@ -163,7 +162,6 @@
                     type="button"
                     class="btn btn-sm variant-filled-secondary ml-3 flex items-center"
                     on:click={navigateToUserPosts}
-                    disabled={!$isLoggedIn}
                     title={$isLoggedIn ? "View your posts" : "Login to view your posts"}
                     aria-label="View your posts"
                 >
