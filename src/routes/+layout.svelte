@@ -62,11 +62,28 @@
     }
 
     function navigateToNewPost() {
+        const pb = pbStore.init();
+        if (!pb.authStore.isValid) {
+            toastStore.trigger({
+                message: 'Please login to create a new post',
+                background: 'variant-filled-warning'
+            });
+            goto("/login");
+            return;
+        }
         goto("/new-post");
     }
 
     async function navigateToUserPosts() {
         const pb = await pbStore.init();
+        if (!pb.authStore.isValid) {
+            toastStore.trigger({
+                message: 'Please login to view your posts',
+                background: 'variant-filled-warning'
+            });
+            goto("/login");
+            return;
+        }
         let userId = pb.authStore.model.id;
         goto(`/users/${userId}/posts?page=1&perPage=10`);
     }
@@ -134,19 +151,23 @@
                 </div>
                 <button
                     type="button"
-                    class="btn-icon btn-icon-sm bg-gradient-to-br variant-gradient-tertiary-primary ml-6"
+                    class="btn btn-sm variant-filled-primary ml-6 flex items-center"
                     on:click={navigateToNewPost}
                     disabled={!$isLoggedIn}
+                    title={$isLoggedIn ? "Create a new post" : "Login to create a post"}
+                    aria-label="Create a new post"
                 >
-                    <CirclePlus />
+                    <CirclePlus class="mr-1" /> <span class="hidden sm:inline">New Post</span>
                 </button>
                 <button
                     type="button"
-                    class="btn-icon btn-icon-sm variant-gradient-tertiary-primary ml-6"
+                    class="btn btn-sm variant-filled-secondary ml-3 flex items-center"
                     on:click={navigateToUserPosts}
                     disabled={!$isLoggedIn}
+                    title={$isLoggedIn ? "View your posts" : "Login to view your posts"}
+                    aria-label="View your posts"
                 >
-                    <GalleryVerticalEnd />
+                    <GalleryVerticalEnd class="mr-1" /> <span class="hidden sm:inline">My Posts</span>
                 </button>
             </svelte:fragment>
             <svelte:fragment slot="default">

@@ -168,7 +168,19 @@
                     <span>New</span>
                 </span>
             {/if}
-            <p class="op"><i>@{post.opName || post.op}</i></p>
+
+            <!-- User Card -->
+            <div class="user-card">
+                <div class="avatar">
+                    <div class="avatar-image">
+                        {post.opName ? post.opName.charAt(0).toUpperCase() : '?'}
+                    </div>
+                </div>
+                <div class="user-info">
+                    <p class="user-name">{post.opName || post.op}</p>
+                </div>
+            </div>
+
             {#if post.description}
                 <p class="description">{post.description}</p>
             {/if}
@@ -302,7 +314,51 @@
         display: flex;
         gap: 10px;
     }
-    
+
+    /* User card styles */
+    .user-card {
+        display: flex;
+        align-items: center;
+        background: rgba(50, 50, 50, 0.5);
+        padding: 10px;
+        border-radius: 10px;
+        margin: 15px 0;
+        width: fit-content;
+        align-self: center;
+    }
+
+    .avatar {
+        width: 40px;
+        height: 40px;
+        overflow: hidden;
+        border-radius: 50%;
+        margin-right: 12px;
+        flex-shrink: 0;
+    }
+
+    .avatar-image {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: var(--color-primary-500);
+        color: white;
+        font-weight: bold;
+        font-size: 18px;
+    }
+
+    .user-info {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .user-name {
+        font-weight: bold;
+        margin: 0;
+        font-size: 14px;
+    }
+
     /* Delete confirmation modal styles */
     .delete-confirm-overlay {
         position: fixed;
