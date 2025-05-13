@@ -1,6 +1,8 @@
 <script>
     import Carousel from '$lib/Carousel.svelte';
-    import { Hash, Heart, X, Pencil, Trash2 } from 'lucide-svelte';
+    import Comment from '$lib/Comment.svelte';
+    import { Hash, Heart, X, Pencil, Trash2, MessageCircle } from 'lucide-svelte';
+import { fade } from 'svelte/transition';
     import { createEventDispatcher, onMount } from 'svelte';
     import { pbStore } from '$lib/pocketbase';
     import { getToastStore } from '@skeletonlabs/skeleton';
@@ -16,6 +18,13 @@
     let votes = post.votes || 0;
     let likeId = null;
     let showDeleteConfirm = false;
+    let comments = [];
+    let topLevelComments = [];
+    let commentsByParent = {};
+    let newComment = '';
+    let showComments = false;
+    let isLoadingComments = false;
+    let totalComments = 0;
 
     onMount(async () => {
         if (pb.authStore.isValid) {
@@ -38,6 +47,159 @@
         } catch (error) {
             console.error('Error checking if user liked post:', error);
         }
+    }
+
+    async function loadComments() {
+        if (isLoadingComments) return;
+
+        isLoadingComments = true;
+        showComments = true;
+
+        try {
+            // Fetch all comments for this post with expanded user data
+            const result = await pb.collection('comments').getList(1, 100, {
+                filter: `post="${post.id}"`,
+                expand: 'user',
+                sort: 'created'
+            });
+
+            comments = result.items;
+            totalComments = result.totalItems;
+
+            // Organize comments by parent for threaded display
+            organizeComments();
+        } catch (error) {
+            console.error('Error fetching comments:', error);
+            toastStore.trigger({
+                message: `Error loading comments: ${error.message}`,
+                background: 'variant-filled-error'
+            });
+        } finally {
+            isLoadingComments = false;
+        }
+    }
+
+    function organizeComments() {
+        // Reset storage
+        topLevelComments = [];
+        commentsByParent = {};
+
+        // First pass: group by parent
+        comments.forEach(comment => {
+            const parentId = comment.parent;
+
+            if (!parentId) {
+                // Top level comment
+                topLevelComments.push(comment);
+            } else {
+                // Reply
+                if (!commentsByParent[parentId]) {
+                    commentsByParent[parentId] = [];
+                }
+                commentsByParent[parentId].push(comment);
+            }
+        });
+
+        // Second pass: attach replies to comments
+        function attachReplies(commentList) {
+            return commentList.map(comment => {
+                const replies = commentsByParent[comment.id] || [];
+                return {
+                    ...comment,
+                    replies: attachReplies(replies)
+                };
+            });
+        }
+
+        topLevelComments = attachReplies(topLevelComments);
+    }
+
+    async function submitComment() {
+        if (!newComment.trim()) {
+            toastStore.trigger({
+                message: 'Comment cannot be empty',
+                background: 'variant-filled-warning'
+            });
+            return;
+        }
+
+        if (!pb.authStore.isValid) {
+            toastStore.trigger({
+                message: 'Please log in to comment',
+                background: 'variant-filled-warning'
+            });
+            goto('/login');
+            return;
+        }
+
+        try {
+            const userId = pb.authStore.model.id;
+
+            const data = {
+                content: newComment,
+                post: post.id,
+                user: userId,
+                is_edited: false,
+                is_hidden: false
+            };
+
+            const newCommentRecord = await pb.collection('comments').create(data);
+
+            // Add user data to the new comment for display
+            const commentWithUser = {
+                ...newCommentRecord,
+                expand: {
+                    user: {
+                        id: userId,
+                        username: pb.authStore.model.username
+                    }
+                },
+                replies: []
+            };
+
+            // Add to comments list
+            comments = [...comments, newCommentRecord];
+            topLevelComments = [...topLevelComments, commentWithUser];
+            totalComments++;
+
+            // Clear the input
+            newComment = '';
+
+            toastStore.trigger({
+                message: 'Comment added successfully',
+                background: 'variant-filled-success'
+            });
+        } catch (error) {
+            console.error('Error adding comment:', error);
+            toastStore.trigger({
+                message: `Error adding comment: ${error.message}`,
+                background: 'variant-filled-error'
+            });
+        }
+    }
+
+    function handleCommentDeleted(event) {
+        const { commentId } = event.detail;
+
+        // Remove the comment from our lists
+        comments = comments.filter(c => c.id !== commentId);
+
+        // Re-organize comments to update the UI
+        organizeComments();
+        totalComments--;
+
+        // No need to call the server again, the Comment component already deleted it
+    }
+
+    function handleReplyAdded(event) {
+        const { reply, parentId } = event.detail;
+
+        // Add to overall comments list
+        comments = [...comments, reply];
+        totalComments++;
+
+        // Re-organize to update the UI
+        organizeComments();
     }
 
     async function toggleLike() {
@@ -76,28 +238,28 @@
     function formatVotes(count) {
         if (count < 1000) return count.toString();
         const formatted = (count / 1000).toFixed(1);
-        return formatted.endsWith('.0') 
-            ? formatted.slice(0, '-2') + 'K' 
+        return formatted.endsWith('.0')
+            ? formatted.slice(0, '-2') + 'K'
             : formatted + 'K';
     }
 
     function close() {
         dispatch('close');
     }
-    
+
     function editPost() {
         goto(`/users/${post.op}/posts/${post.id}/edit`);
         close();
     }
-    
+
     function openDeleteConfirm() {
         showDeleteConfirm = true;
     }
-    
+
     function closeDeleteConfirm() {
         showDeleteConfirm = false;
     }
-    
+
     async function deletePost() {
         try {
             // Check if the user is authorized to delete the post
@@ -108,7 +270,7 @@
                 });
                 return;
             }
-            
+
             const userId = pb.authStore.model.id;
             if (post.op !== userId) {
                 toastStore.trigger({
@@ -117,20 +279,20 @@
                 });
                 return;
             }
-            
+
             // Delete the post
             await pb.collection('posts').delete(post.id);
-            
+
             // Show success message
             toastStore.trigger({
                 message: 'Post deleted successfully',
                 background: 'variant-filled-success'
             });
-            
+
             // Close delete confirmation and full screen view
             showDeleteConfirm = false;
             close();
-            
+
             // Refresh the page to update the posts list
             window.location.reload();
         } catch (error) {
@@ -139,6 +301,14 @@
                 message: `Error deleting post: ${error.message}`,
                 background: 'variant-filled-error'
             });
+        }
+    }
+
+    function toggleComments() {
+        if (!showComments) {
+            loadComments();
+        } else {
+            showComments = false;
         }
     }
 </script>
@@ -184,7 +354,7 @@
             {#if post.description}
                 <p class="description">{post.description}</p>
             {/if}
-            
+
             <div class="action-container">
                 {#if !canEdit}
                     <div class="heart-container">
@@ -205,10 +375,65 @@
                         </button>
                     </div>
                 {/if}
+
+                <button
+                    class="btn btn-sm {showComments ? 'variant-filled-primary' : 'variant-ghost-primary'} ml-4"
+                    on:click={toggleComments}
+                >
+                    <MessageCircle size={16} class="mr-2" />
+                    Comments {totalComments > 0 ? `(${totalComments})` : ''}
+                </button>
             </div>
+
+            <!-- Comments Section -->
+            {#if showComments}
+                <div class="comments-section" transition:fade={{ duration: 200 }}>
+                    <h3 class="comments-heading">Comments</h3>
+
+                    <!-- New Comment Form -->
+                    <div class="new-comment-form">
+                        <textarea
+                            bind:value={newComment}
+                            placeholder="Add a comment..."
+                            class="textarea"
+                            rows="2"
+                        ></textarea>
+                        <button
+                            class="btn variant-filled-primary"
+                            on:click={submitComment}
+                            disabled={!pb.authStore.isValid}
+                        >
+                            Post
+                        </button>
+                        {#if !pb.authStore.isValid}
+                            <div class="login-prompt">
+                                <a href="/login" class="btn btn-sm variant-ghost-surface">Login to comment</a>
+                            </div>
+                        {/if}
+                    </div>
+
+                    <!-- Comments List -->
+                    <div class="comments-list">
+                        {#if isLoadingComments}
+                            <div class="loading">Loading comments...</div>
+                        {:else if topLevelComments.length === 0}
+                            <div class="no-comments">No comments yet. Be the first to comment!</div>
+                        {:else}
+                            {#each topLevelComments as comment (comment.id)}
+                                <Comment
+                                    {comment}
+                                    replies={comment.replies || []}
+                                    on:commentDeleted={handleCommentDeleted}
+                                    on:replyAdded={handleReplyAdded}
+                                />
+                            {/each}
+                        {/if}
+                    </div>
+                </div>
+            {/if}
         </div>
     </div>
-    
+
     <!-- Delete Confirmation Modal -->
     {#if showDeleteConfirm}
         <div class="delete-confirm-overlay" on:click|stopPropagation={closeDeleteConfirm}>
@@ -236,6 +461,7 @@
         justify-content: center;
         align-items: center;
         z-index: 1000;
+        overflow-y: auto;
     }
 
     .close-button {
@@ -255,6 +481,7 @@
         display: flex;
         flex-direction: column;
         align-items: center;
+        margin: 40px 0;
     }
 
     .carousel-slide {
@@ -262,7 +489,7 @@
         justify-content: center;
         align-items: center;
         width: 100%;
-        height: 70vh;
+        height: 60vh;
     }
 
     img {
@@ -286,11 +513,13 @@
     .op, .description {
         margin: 10px 0;
     }
-    
+
     .action-container {
         display: flex;
         justify-content: center;
         margin-top: 20px;
+        flex-wrap: wrap;
+        gap: 10px;
     }
 
     .heart-container {
@@ -309,7 +538,7 @@
     .votes {
         margin-left: 10px;
     }
-    
+
     .edit-buttons {
         display: flex;
         gap: 10px;
@@ -359,6 +588,59 @@
         font-size: 14px;
     }
 
+    /* Comments section styles */
+    .comments-section {
+        margin-top: 20px;
+        width: 100%;
+        max-width: 800px;
+        margin-left: auto;
+        margin-right: auto;
+        border-top: 1px solid rgba(255, 255, 255, 0.2);
+        padding-top: 20px;
+    }
+
+    .comments-heading {
+        text-align: left;
+        font-size: 1.5rem;
+        margin-bottom: 20px;
+    }
+
+    .new-comment-form {
+        margin-bottom: 20px;
+    }
+
+    .textarea {
+        width: 100%;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 4px;
+        color: white;
+        padding: 12px;
+        margin-bottom: 10px;
+    }
+
+    .new-comment-form button {
+        float: right;
+    }
+
+    .login-prompt {
+        clear: both;
+        text-align: center;
+        margin-top: 15px;
+        padding-top: 10px;
+        border-top: 1px dashed rgba(255, 255, 255, 0.2);
+    }
+
+    .comments-list {
+        text-align: left;
+    }
+
+    .loading, .no-comments {
+        text-align: center;
+        padding: 20px;
+        color: rgba(255, 255, 255, 0.7);
+    }
+
     /* Delete confirmation modal styles */
     .delete-confirm-overlay {
         position: fixed;
@@ -372,7 +654,7 @@
         align-items: center;
         z-index: 1100;
     }
-    
+
     .delete-confirm-modal {
         background-color: white;
         border-radius: 0.5rem;
@@ -382,18 +664,18 @@
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         color: #333;
     }
-    
+
     .delete-confirm-modal h3 {
         margin-top: 0;
         font-size: 1.5rem;
         color: #333;
         margin-bottom: 1rem;
     }
-    
+
     .delete-confirm-modal p {
         margin-bottom: 1.5rem;
     }
-    
+
     .button-container {
         display: flex;
         justify-content: flex-end;
