@@ -56,6 +56,7 @@ import { fade } from 'svelte/transition';
         showComments = true;
 
         try {
+            // TODO: Implement full pagination for comments. Currently loads up to 100 comments.
             // Fetch all comments for this post with expanded user data
             const result = await pb.collection('comments').getList(1, 100, {
                 filter: `post="${post.id}"`,
@@ -293,8 +294,9 @@ import { fade } from 'svelte/transition';
             showDeleteConfirm = false;
             close();
 
-            // Refresh the page to update the posts list
-            window.location.reload();
+            // Dispatch event and remove page reload
+            dispatch('postDeleted', { postId: post.id });
+            // window.location.reload(); // Removed for reactive update
         } catch (error) {
             console.error('Error deleting post:', error);
             toastStore.trigger({

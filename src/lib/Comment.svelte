@@ -2,7 +2,7 @@
     import { createEventDispatcher, onMount } from 'svelte';
     import { pbStore } from '$lib/pocketbase';
     import { getToastStore } from '@skeletonlabs/skeleton';
-    import { Reply, Edit, Trash2, Flag } from 'lucide-svelte';
+    import { Reply, Edit, Trash2 } from 'lucide-svelte';
     import { goto } from '$app/navigation';
 
     const dispatch = createEventDispatcher();
@@ -254,9 +254,7 @@
                 <Trash2 size={14} class="mr-1" /> Delete
             </button>
         {:else}
-            <button class="btn btn-sm variant-ghost-surface">
-                <Flag size={14} class="mr-1" /> Report
-            </button>
+            <!-- Report button removed. Feature to be implemented. -->
         {/if}
     </div>
 

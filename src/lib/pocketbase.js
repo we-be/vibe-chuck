@@ -14,10 +14,6 @@ const createPocketBaseStore = () => {
             const client = new PocketBase(BASE_URL);
             set(client);
             return client;
-        },
-        getAuthStore: () => {
-            const client = get(pbStore);
-            return client ? client.authStore : null;
         }
     };
 };

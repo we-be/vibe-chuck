@@ -21,6 +21,7 @@
         GalleryVerticalEnd,
         User,
     } from "lucide-svelte";
+    import { formatDate, isEventInFuture, handleEventNavigation, formatDateOnly } from "$lib/utils.js";
 
     initializeStores();
     const toastStore = getToastStore();
@@ -44,10 +45,6 @@
         fetchEvents();
         checkAuthStatus();
     });
-
-    function navigateToEvent(eventId) {
-        goto(`/events/${eventId}`);
-    }
 
     async function logout() {
         const pb = await pbStore.init();
@@ -86,33 +83,6 @@
         }
         let userId = pb.authStore.model.id;
         goto(`/users/${userId}/posts?page=1&perPage=10`);
-    }
-
-    function isEventInFuture(eventStartDate) {
-        const currentDate = new Date();
-        const startDate = new Date(eventStartDate);
-        return startDate > currentDate;
-    }
-
-    function formatDate(date) {
-        return new Date(date).toLocaleString(undefined, {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-            hour: "2-digit",
-            minute: "2-digit",
-        });
-    }
-
-    function handleEventClick(event) {
-        if (isEventInFuture(event.start)) {
-            toastStore.trigger({
-                message: `Event "${event.displayName}" starts on ${formatDate(event.start)}`,
-                background: "variant-filled-primary",
-            });
-        } else {
-            navigateToEvent(event.id);
-        }
     }
 
     // Subscribe to page changes
@@ -179,7 +149,7 @@
                             )
                                 ? 'future-event'
                                 : ''}"
-                            on:click={() => handleEventClick(event)}
+                            on:click={() => handleEventNavigation(event, toastStore, goto)}
                             title={isEventInFuture(event.start)
                                 ? `Starts ${formatDate(event.start)}`
                                 : ""}
@@ -225,7 +195,7 @@
                         )
                             ? 'future-event'
                             : ''}"
-                        on:click={() => handleEventClick(event)}
+                        on:click={() => handleEventNavigation(event, toastStore, goto)}
                         title={isEventInFuture(event.start)
                             ? `Starts ${formatDate(event.start)}`
                             : ""}

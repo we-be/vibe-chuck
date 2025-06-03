@@ -4,42 +4,18 @@
     import { elasticOut } from 'svelte/easing';
     import { Shell } from 'lucide-svelte';
     import { events, fetchEvents } from '$lib/stores/events';
+    import { formatDateOnly, isEventInFuture, handleEventNavigation } from '$lib/utils.js';
     import { goto } from '$app/navigation';
     import { getToastStore } from '@skeletonlabs/skeleton';
     import Post from '$lib/Post.svelte';
     import FullScreenPost from '$lib/FullScreenPost.svelte';
     
     export let data;
-    const { topPosts } = data;
+    let topPosts = data.topPosts ? data.topPosts.slice() : [];
     
     let animatingEvents = [];
     let showPosts = false;
     const toastStore = getToastStore();
-    
-    function formatDate(date) {
-        return new Date(date).toLocaleString(undefined, {
-            year: "numeric",
-            month: "long",
-            day: "numeric"
-        });
-    }
-    
-    function isEventInFuture(eventStartDate) {
-        const currentDate = new Date();
-        const startDate = new Date(eventStartDate);
-        return startDate > currentDate;
-    }
-    
-    function handleEventClick(event) {
-        if (isEventInFuture(event.start)) {
-            toastStore.trigger({
-                message: `Event "${event.displayName}" starts on ${formatDate(event.start)}`,
-                background: "variant-filled-primary",
-            });
-        } else {
-            goto(`/events/${event.id}`);
-        }
-    }
     
     let fullScreenPost = null;
     
@@ -93,7 +69,7 @@
                         delay: i * 100,
                         easing: elasticOut
                     }}
-                    on:click={() => handleEventClick(event)}
+                    on:click={() => handleEventNavigation(event, toastStore, goto)}
                 >
                     <div class="flex items-center justify-between">
                         <span>{event.displayName}</span>
@@ -103,7 +79,7 @@
                     </div>
                     <div class="text-xs sm:text-sm mt-2 opacity-90 flex flex-wrap items-center">
                         <span class="badge variant-soft-primary text-xs mr-2 mb-1">Starts</span>
-                        {formatDate(event.start)}
+                        {formatDateOnly(event.start)}
                     </div>
                 </button>
             {/each}
@@ -127,10 +103,7 @@
                                     {post}
                                     canEdit={false}
                                     on:openFullScreen={openFullScreen}
-                                    on:postDeleted={() => {
-                                        // Refresh the page when a post is deleted
-                                        window.location.reload();
-                                    }}
+                                    on:postDeleted={(e) => { topPosts = topPosts.filter(p => p.id !== e.detail.postId); }}
                                 />
                                 <div class="absolute top-3 right-3 z-20">
                                     <span class="badge variant-filled-secondary">{post.eventDisplayName}</span>
@@ -148,6 +121,7 @@
     <FullScreenPost 
         post={fullScreenPost} 
         canEdit={false}
+        on:postDeleted={(e) => { topPosts = topPosts.filter(p => p.id !== e.detail.postId); closeFullScreen(); }}
         on:close={closeFullScreen} 
     />
 {/if}

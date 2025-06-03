@@ -122,8 +122,6 @@
             // Close delete confirmation
             showDeleteConfirm = false;
             
-            // Refresh the page to update the posts list
-            window.location.reload();
         } catch (error) {
             console.error('Error deleting post:', error);
             toastStore.trigger({
